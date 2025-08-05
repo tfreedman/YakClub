@@ -1,0 +1,457 @@
+@font-face {
+  font-family: "Sofia Pro Soft";
+  src: url("fonts/SofiaProSoftReg.woff2") format("woff2");
+  font-weight: 400; /* Regular */
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Sofia Pro Soft";
+  src: url("fonts/SofiaProSoftMed.woff2") format("woff2");
+  font-weight: 600; /* Medium */
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Sofia Pro Soft";
+  src: url("fonts/SofiaProSoftBold.woff2") format("woff2");
+  font-weight: 700; /* Bold */
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+	font-family: 'TorontoSubway';
+  font-weight: bold;
+	src: url('fonts/torontosubway-bold.woff') format('woff');
+}
+@font-face {
+	font-family: 'TorontoSubway';
+  font-weight: normal;
+	src: url('fonts/torontosubway.woff') format('woff');
+}
+
+html {
+  box-sizing: border-box;
+  -webkit-font-smoothing: antialiased;
+}
+
+* {
+  box-sizing: inherit;
+  &:before,
+  &:after {
+    box-sizing: inherit;
+  }
+
+  overflow-wrap: anywhere;
+  word-wrap: break-word;
+  word-break: break-word;
+  hyphens: auto;
+}
+
+body {
+  margin: 0;
+  background-size: cover;
+  font-family: 'Sofia Pro Soft';
+  font-size: 14px;
+  background: #FFF;
+
+  h1, h2, h3, h4, h5, h6, .username, time, label, button {font-family: 'TorontoSubway'; font-weight: bold}
+  input, textarea {font-family: 'Sofia Pro Soft'}
+
+  #gradient {
+    background-image: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background-position: fixed;
+    background-size: cover;
+    width: 100%;
+    height: 100%;
+    position: fixed;
+    opacity: 0.3;
+    z-index: -1;
+  }
+
+  #scribbles {
+    background: url('scribbles.svg') no-repeat center center fixed;
+    background-size: cover;
+    width: 100%;
+    height: 100%;
+    position: fixed;
+    opacity: 0.3;
+    z-index: -1;
+  }
+
+  p {line-height: 1.5em}
+
+  #topbar {
+    height: 100px;
+    width: 90%;
+    margin: 0 auto;
+    padding-top: 20px;
+
+    nav {
+      display: flex;
+
+      a {display: inline-block}
+
+      .left {
+        margin-right: auto;
+
+        #logo {
+          width: 55px;
+          height: 55px;
+        }
+
+      }
+      .right {
+        a {
+          margin: 10px;
+
+          svg {
+            width: 25px;
+            height: 25px;
+          }
+
+          &.active {opacity: 1}
+          opacity: 0.4;
+        }
+
+        #search-container {
+          display: inline;
+          & > svg {
+            &.active {opacity: 1}
+            opacity: 0.4;
+            display: none;
+            width: 25px;
+            height: 25px;
+          }
+
+          #xmark {display: none}
+
+          #search-wrapper {
+            position: relative;
+            display: inline-block;
+            top: -5px;
+            right: 10px;
+
+            &::before {
+              background: url('search.svg');
+              position: absolute;
+              content: '';
+              width: 15px;
+              height: 15px;
+              top: 14px;
+              left: 14px;
+            }
+
+            #search-bar {
+              width: 300px;
+              height: 32px;
+              border-radius: .375rem;
+              border: 1px solid #eaeaea;
+              padding: 20px 20px 20px 40px;
+              font-size: 12px;
+              opacity: 0.5;
+  
+              &:focus {opacity: 1}
+            }
+          }
+        }
+      }
+    }
+  }
+
+  #container {
+    width: 90%;
+    margin: 0 auto;
+    padding-bottom: 50px;
+
+    #settings, #about {max-width: 700px}
+
+    #new .toast-close-button {display: none}
+
+    & > article:not(:first-child) {
+      display: none;
+    }
+
+    article {
+      & > h1:first-of-type {
+        font-size: 30px;
+        display: inline;
+        color: #000;
+        margin-top: 0;
+        margin: 0;
+        padding: 0;
+       
+        &:hover {text-decoration: underline}
+      }
+
+      h2 {
+        a {color: #000; text-decoration: none}
+        margin: 0;
+        padding: 0;
+
+        &:hover {text-decoration: underline}
+      }
+
+      & > h2:first-of-type {
+        font-size: 16px;
+        padding-bottom: 30px;
+        font-weight: normal;
+        text-transform: lowercase;
+      }
+
+      h3 {
+        display: inline-block;
+        font-size: 16px;
+        margin: 10px 0;
+        padding: 0;
+        a {color: #666; text-decoration: none}
+      }
+
+      #about {
+        .about {
+          width: 500px;
+          color: #160b39;
+          border-radius: 10px;
+          padding: 15px;
+          margin: 15px;
+
+          p:first-child {margin-top: 0}
+          p:last-child {margin-bottom: 0}
+        }
+      }
+    }
+
+    button {
+      margin-top: 5px;
+      border: none;
+      color: #fff;
+      padding: 10px;
+      background: #cc0033;
+      border-radius: 5px;
+      &:hover {
+        background: #ff0040;
+      }
+      transition: all 0.5s;
+      &:active {background: #990026}
+      &:disabled {opacity: 0.5}
+      &:disabled:hover {background: #cc0033}
+    }
+
+    #settings {
+      #profile, #relays, #keys {
+        width: 300px;
+        display: flex;
+        color: #160b39;
+        padding: 10px;
+        margin: 10px;
+ 
+        form {
+          width: 100%;
+          button {float: right}
+
+          .field {
+            display: flex;
+            flex-direction: column;
+            width: fit-content;
+            position: static;
+            width: 100%;
+
+            label {
+              font-size: 0.75rem;
+              font-weight: 700;
+              margin: 10px 0 0 0;
+              padding: 0 3px;
+              text-align: right;
+              width: fit-content;
+              padding: 5px 5px 5px 0;
+              margin: 3px 0;
+              display: inline-block;
+            }
+          
+            input[type=text].input, input[type=url].input {
+              padding: 11px 10px;
+              font-size: 0.75rem;
+              background-color: rgba(255, 255, 255, 0.8);
+              border: 1px solid #eaeaea;
+              border-radius: .375rem;
+
+              &:disabled {background: #FFF; opacity: 0.5}
+              &:focus {outline: none}
+            }
+          }
+        }
+      }
+    }
+
+    #toastr, #new {
+      .hidden {display: none !important}
+      & > .toasts-container > .toasts > .toast {max-width: 100% !important}
+
+      & > .toasts-container > .toasts > .children {
+        margin-left: 0;
+      }
+      .toasts {margin-top: 10px}
+
+      .children {
+        margin-left: 20px;
+        border-left: 1px solid rgba(0,0,0,0.5)
+      }
+
+      .toasts-loading {
+        &.active {display: visible;}
+        display: none;
+        color: #00F;
+        font-size: 20px;
+        text-align: center;
+      }
+
+      .toasts-empty {
+        &.active {display: inherit;}
+        display: none;
+      }
+
+      .toast {
+        max-width: 480px;
+        padding: 20px 0;
+
+        p, p a {
+         color: #666; 
+        }
+
+        p {
+          margin: 0;
+
+          br {display: none}
+        }
+      }
+
+      .toast-new {margin-bottom: 20px}
+
+      .toast-new, .note {
+        display: flex;
+
+        .children {margin: 20px !important}
+
+        .toasts > div:last-child {margin-bottom: 0}
+
+        button {
+          float: right;
+          margin-left: 10px;
+        }
+
+        &.highlight > div {background: #fff0f4 !important}
+
+        & > div {
+          transition: all 0.5s;
+          &:hover {background: rgba(255, 255, 255, 0.5)}
+          background: rgba(255, 255, 255, 0.2);
+          margin: 0 0 0 20px;
+          display: flex;
+          border-radius: 10px;
+          padding: 15px;
+  
+          form {
+            width: 100%;
+            clear: both;
+            margin-bottom: 0;
+  
+            input, textarea {
+              font-size: 14px;
+              resize: vertical;
+              width: 100%;
+              height: auto;
+              overflow: hidden;
+              max-width: 100%;
+              border: none;
+              padding: 10px;
+              background: rgba(0,0,0,0);
+              border-radius: 10px;
+              color: #282a51;
+            }
+          }
+  
+          .avatar {
+            min-width: 50px;
+            object-fit: cover;
+            border-radius: 50px;
+            overflow: hidden;
+            height: 50px;
+            margin-right: 10px;
+  
+            img {
+              &.hashicon {transform: scale(1.25)}
+              width: 50px;
+              height: 50px;
+            }
+          }
+  
+          footer {
+            display: flex;
+            flex-direction: column;
+            height: 52px;
+            order: 3;
+            margin-left: 15px;
+            justify-content: space-between;
+
+            a {
+              flex-basis: 32%;
+              opacity: 0.2;
+              margin-bottom: 2px;
+              &:hover {opacity: 1}
+
+              img {width: 12px; height: 12px}
+            }
+          }
+
+          .content {
+            order: 2;
+          
+            header {
+              margin-bottom: 10px;
+    
+              .details {
+                display: flex;
+  
+                .username {font-weight: bold}
+                .created_at {
+                  font-size: 10px;
+                  margin-left: auto;
+                }
+              }
+  
+              .pubkey {
+                font-style: italic;
+                font-weight: lighter;
+                color: #888;
+                font-size: 12px;
+                &:hover {color: #000; transition: all 0.5s}
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+@media screen and (max-width: 590px) {
+  body {
+    #container {padding: 0 10px 50px 10px; width: 100%}
+    #topbar {padding: 20px 10px 0 10px; width: 100%}
+    .toast {br {display: block !important}}
+    .middot {opacity: 0}
+
+    #search-container {
+      #search-bar {
+        width: 250px !important;
+      }      
+
+      & > svg {
+        display: inline-block !important;
+      }
+    }
+  }
+}

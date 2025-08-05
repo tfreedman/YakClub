@@ -1,0 +1,31 @@
+{
+  "manifest_version": 2,
+  "name": "Toastr",
+  "version": "1.0",
+
+  "description": "Comment on any given website",
+
+  "icons": {
+    "48": "icons/logo-48.png"
+  },
+  "background": {
+    "page": "index.html",
+    "persistent": true
+  },
+  "content_security_policy": "worker-src 'self'; script-src 'self' 'wasm-unsafe-eval'",
+  "permissions": [
+    "webRequest",
+    "unlimitedStorage",
+    "activeTab",
+    "tabs"
+  ],
+  "browser_action": {
+    "default_popup": "index.html",
+    "default_icon": {
+      "16": "icons/logo-16.png",
+      "32": "icons/logo-32.png",
+      "64": "icons/logo-64.png",
+      "128": "icons/logo-128.png"
+    }
+  }
+}
