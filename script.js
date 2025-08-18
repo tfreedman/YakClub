@@ -267,8 +267,8 @@ function uploadNote(data, note, parent) {
   console.log("Sending " + JSON.stringify(note));
   Promise.any(window.pool.publish(relays, note)).then(relay => {
     // When we upload a note, normally we'd have to keep track of state. 
-    // If there are no comments, we'd have to remove the message asking you to be the first.
-    // We'd also have to update the number of comments, etc. Or, we can cheat and just re-render everything.
+    // If there are no messages, we'd have to remove the message asking you to be the first.
+    // We'd also have to update the number of messages, etc. Or, we can cheat and just re-render everything.
 
     var isToast = false;
     note["tags"].forEach((tag) => {
@@ -592,7 +592,7 @@ initSqlJs(config).then(function(SQL){
           }
         },
         oneose() {
-          console.log('EOSE on notes/comments - Calling fetchAuthorInfo...');
+          console.log('EOSE on notes/messages - Calling fetchAuthorInfo...');
           fetchAuthorInfo();
 
           h.close();
@@ -757,7 +757,7 @@ initSqlJs(config).then(function(SQL){
     var pageTitle;
     var pageSubTitle;
     var shouldShowHeadings = false;
-    var shouldShowComments = false;
+    var shouldShowMessages = false;
     var showEmptyMessage = true;
 
     if (mode.startsWith("domain-")) {
@@ -767,7 +767,7 @@ initSqlJs(config).then(function(SQL){
       stmt.bind({$domain: mode.substring(7)});
 
       shouldShowHeadings = true;
-      shouldShowComments = false;
+      shouldShowMessages = false;
 
       pageTitle = 'Search Results'
       pageSubTitle = 'Domain: ' + mode.substring(7);
@@ -776,7 +776,7 @@ initSqlJs(config).then(function(SQL){
       stmt = db.prepare("SELECT * FROM toasts WHERE kind = 1 ORDER BY created_at DESC");
 
       shouldShowHeadings = true;
-      shouldShowComments = false;
+      shouldShowMessages = false;
       emptyMsg = "Sorry, there are no recent toasts";
 
       pageTitle = 'Recent Toasts'
@@ -788,7 +788,7 @@ initSqlJs(config).then(function(SQL){
       emptyMsg = "Sorry, there are no toasts for URL " + mode.substring(4) + " - why not be the first to write one?";
 
       shouldShowHeadings = true;
-      shouldShowComments = false;
+      shouldShowMessages = false;
 
       pageTitle = 'Search Results'
       pageSubTitle = 'URL: ' + mode.substring(4);
@@ -800,7 +800,7 @@ initSqlJs(config).then(function(SQL){
       emptyMsg = "Sorry, there are no toasts from profile " + mode.substring(8) + ' (' + pubkey + ')';
 
       shouldShowHeadings = true;
-      shouldShowComments = false;
+      shouldShowMessages = false;
 
       var username = '';
       if (users[pubkey]) {
@@ -829,13 +829,13 @@ initSqlJs(config).then(function(SQL){
       emptyMsg = "Sorry, there are no toasts corresponding to " + mode.substring(6) + ' (' + id + ')';
 
       shouldShowHeadings = true;
-      shouldShowComments = true;
+      shouldShowMessages = true;
 
       pageTitle = 'Viewing Thread';
       pageSubTitle = mode.substring(6);
     } else if (mode.startsWith("replies-")) {
       shouldShowHeadings = false;
-      shouldShowComments = true;
+      shouldShowMessages = true;
 
       console.log('Loading replies for ' + mode.substring(8));
       var dirty = false;
@@ -904,34 +904,34 @@ initSqlJs(config).then(function(SQL){
         var ccStmt = db.prepare("SELECT COUNT(*) FROM notes WHERE kind = 42 AND id <> $id AND note LIKE $noteid");
         ccStmt.bind({$id: event.id, $noteid: '%' + event.id + '%'});
 
-        if (ccStmt.step()) {var commentsCount = ccStmt.getAsObject()["COUNT(*)"]}
-        var commentsString = '';
+        if (ccStmt.step()) {var messagesCount = ccStmt.getAsObject()["COUNT(*)"]}
+        var messagesString = '';
 
-        if (commentsCount != 1) {
-          commentsString = 'comments';
+        if (messagesCount != 1) {
+          messagesString = 'messages';
         } else {
-          commentsString = 'comment';
+          messagesString = 'message';
         }
 
         var epochTimestamp = new Date(0);
         epochTimestamp.setUTCSeconds(event.created_at);
 
         var innerHTML = `<h2><a href="${row.url}">${event.content}</a></h2>
-        <p><a class="comments"></a> &middot; ${epochTimestamp.toLocaleString()} <span class="middot">&middot;</span><br /> <a class="domain"></a> &middot; submitted by <a class="submitter"></a> </p>
+        <p><a class="messages"></a> &middot; ${epochTimestamp.toLocaleString()} <span class="middot">&middot;</span><br /> <a class="domain"></a> &middot; submitted by <a class="submitter"></a> </p>
         `
         article.innerHTML = innerHTML;
         container.querySelector('.toasts').appendChild(article);
 
-        var commentsLink = article.querySelector('a.comments');
-        commentsLink.innerHTML = `${commentsCount} ${commentsString}`
-        commentsLink.onclick = function(event) {
+        var messagesLink = article.querySelector('a.messages');
+        messagesLink.innerHTML = `${messagesCount} ${messagesString}`
+        messagesLink.onclick = function(event) {
           event.preventDefault();
           document.getElementById('search-bar').value = event.target.dataset.id;
           searchResults(document.getElementById('search-bar').value);
           history.pushState({hash: event.target.dataset.id, title: document.title}, '', '#' + event.target.dataset.id);
         }
-        commentsLink.href = '#' + window.NostrTools.nip19.noteEncode(event.id);
-        commentsLink.dataset.id = window.NostrTools.nip19.noteEncode(event.id);
+        messagesLink.href = '#' + window.NostrTools.nip19.noteEncode(event.id);
+        messagesLink.dataset.id = window.NostrTools.nip19.noteEncode(event.id);
 
         var domainLink = article.querySelector('a.domain');
         domainLink.innerHTML = `${row.domain}`
@@ -961,7 +961,7 @@ initSqlJs(config).then(function(SQL){
         displayToast(container.querySelector('.toasts'), {username: username, pubkey: event.pubkey, message: event.content, avatarURL: avatarURL, created_at: event.created_at}, event);
       }
 
-      if (shouldShowComments) {
+      if (shouldShowMessages) {
         // Draw replies
         const children = document.createElement('div');
         children.classList.add('children');
@@ -990,9 +990,9 @@ initSqlJs(config).then(function(SQL){
         drawToasts(children, knownUsers, "replies-" + event.id);
 
         if (children.querySelector('& > .toasts').children.length == 0 && mode.startsWith('toast-')) {
-          // Add text if there are currently no comments.
+          // Add text if there are currently no messages.
           showEmptyMessage = true;
-          emptyMsg = 'no comments (yet) - why not be the first to write one?'
+          emptyMsg = 'no messages (yet) - why not be the first to write one?'
         }
       }
     }
@@ -1070,7 +1070,7 @@ initSqlJs(config).then(function(SQL){
     node.append(div);
   }
 
-  // New Comments
+  // New Messages
   function newNote(node, params) {
     // Grab the profile picture URL from the settings box for the time being
     var avatarURL;
@@ -1118,7 +1118,7 @@ initSqlJs(config).then(function(SQL){
 
     if (url != '' || params.showButton !== undefined) { // Do not add a New Toast button to replies - they have their own button
       const button = document.createElement('button');
-      button.innerHTML = 'New Comment';
+      button.innerHTML = 'New Message';
       button.setAttribute('type', 'button');
 
       button.classList.add("toast-new-button");
