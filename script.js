@@ -80,10 +80,10 @@ function toBinString(arr) {
 function getRelays() {
   var default_relays = ["wss://relay.toastr.net", "wss://purplepag.es", "wss://relay.damus.io", "wss://nos.lol", "wss://relay.primal.net"];
   var relays = [];
-  var override_relays = false;
+  var override_relays = true;
 
   if (override_relays) {
-    var relays = ["wss://relay.toastr.net", "wss://purplepag.es"];
+    var relays = ["wss://toastr.tylerfreedman.com", "wss://purplepag.es"];
     document.querySelector('#settings #relays .message').innerHTML = 'Overriding NIP-07 Relays for debugging purposes';
   } else {
     if (typeof window.nostr !== 'undefined') {
@@ -246,7 +246,7 @@ function newNoteSubmit(event) {
     });
 
     console.log('tags: ' + tags);
-    var e = {created_at: Math.floor(Date.now() / 1000), kind: 1, tags: tags, content: data.message.value};
+    var e = {created_at: Math.floor(Date.now() / 1000), kind: 42, tags: tags, content: data.message.value};
   }
 
   if (typeof window.nostr !== 'undefined') {
@@ -438,7 +438,7 @@ initSqlJs(config).then(function(SQL){
         db.run("UPDATE notes SET id = ? created_at = ?, kind = ?, note = ? WHERE pubkey = ? AND created_at < ?)", [value['id'], value['created_at'], value['kind'], note, value['pubkey'], value['created_at']]);
         console.log('Adding ' + value['pubkey'] + ' to window.users...');
       }
-    } else if (value['kind'] == 1) {
+    } else if (value['kind'] == 42) {
       // Confirm it isn't a toast...
       var isToast = false;
       value["tags"].forEach((tag) => {
@@ -565,7 +565,7 @@ initSqlJs(config).then(function(SQL){
           var dbstr = toBinString(window.db.export());
           window.localStorage.setItem("toastr.sqlite", dbstr);
         }
-	fetchNotes();
+        fetchNotes();
         //h.close();
       }
     }
@@ -577,7 +577,7 @@ initSqlJs(config).then(function(SQL){
     while(stmt.step()) {
       const row = stmt.getAsObject();
       var event = JSON.parse(row.note);
-      filters.push({kinds: [1], '#e': [event.id]});
+      filters.push({kinds: [42], '#e': [event.id]});
     }
 
     window.filters = filters;
@@ -587,7 +587,7 @@ initSqlJs(config).then(function(SQL){
       relays, filters,
       {
         onevent(event) {
-          if (event && event.pubkey && event.content && event.kind == 1 && window.NostrTools.verifyEvent(event, event.pubkey)) {
+          if (event && event.pubkey && event.content && event.kind == 42 && window.NostrTools.verifyEvent(event, event.pubkey)) {
             importNote(event);
           }
         },
@@ -681,7 +681,7 @@ initSqlJs(config).then(function(SQL){
     }
 
     // Get the public keys of everyone who's written a note
-    var stmt = db.prepare("SELECT * FROM notes WHERE kind = 1");
+    var stmt = db.prepare("SELECT * FROM notes WHERE kind = 42");
     while(stmt.step()) {
       const row = stmt.getAsObject();
       var event = JSON.parse(row.note);
@@ -845,7 +845,7 @@ initSqlJs(config).then(function(SQL){
       // This is only doable with an index of tags though.
       // {kinds: [1], '#e': [mode.substring(8), "", "root/reply"]}
 
-      stmt = db.prepare("SELECT * FROM notes WHERE kind = 1 AND id <> $id AND note LIKE $noteid ORDER BY created_at ASC");
+      stmt = db.prepare("SELECT * FROM notes WHERE kind = 42 AND id <> $id AND note LIKE $noteid ORDER BY created_at ASC");
       stmt.bind({$id: mode.substring(8), $noteid: '%' + mode.substring(8) + '%'});
 
       emptyMsg = "";
@@ -901,7 +901,7 @@ initSqlJs(config).then(function(SQL){
         var article = document.createElement('div');
         article.classList += 'toast'
 
-        var ccStmt = db.prepare("SELECT COUNT(*) FROM notes WHERE kind = 1 AND id <> $id AND note LIKE $noteid");
+        var ccStmt = db.prepare("SELECT COUNT(*) FROM notes WHERE kind = 42 AND id <> $id AND note LIKE $noteid");
         ccStmt.bind({$id: event.id, $noteid: '%' + event.id + '%'});
 
         if (ccStmt.step()) {var commentsCount = ccStmt.getAsObject()["COUNT(*)"]}
