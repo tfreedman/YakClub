@@ -34,7 +34,7 @@
     </div>
 
     <div id="container">
-      <article id="toastr">
+      <article id="trollbox">
         <h1 class="title" id="title"></h1>
         <h2 class="subtitle" id="subtitle"></h2>
 
@@ -126,9 +126,9 @@
 
         <h2>Toasts</h2>
         <div class="about">
-          <p>A toast is defined as a kind 1 event, with tags <em>['r', &lt;URL&gt;], ['t', 'toastr'], ['subject', &lt;subject&gt;]</em>. Due to <a href="https://github.com/nostr-protocol/nips/issues/523">limitations in the Nostr protocol</a>, all toasts must be explicitly tagged toastr at this time. Responses to toasts are currently implemented as standard kind 1 events.</p>
+          <p>A toast is defined as a kind 1 event, with tags <em>['r', &lt;URL&gt;], ['t', 'toastr'], ['subject', &lt;subject&gt;]</em>. Due to <a href="https://github.com/nostr-protocol/nips/issues/523">limitations in the Nostr protocol</a>, all toasts must be explicitly tagged toastr at this time. Responses to toasts are currently implemented as kind 42 events.</p>
 
-          <p>Toastr implements NIP-07. However, <em>browser extensions cannot interact with other browser extensions</em>, so the extension version of Toastr requires your nsec / preferred nostr relays in order to work. This limitation does not apply to the web version, which is compatible with extensions like nos2x.</p>
+          <p>Trollbox implements NIP-07. However, <em>browser extensions cannot interact with other browser extensions</em>, so the extension version of Trollbox requires your nsec / preferred nostr relays in order to work. This limitation does not apply to the web version, which is compatible with extensions like nos2x.</p>
         </div>
 
       </article>

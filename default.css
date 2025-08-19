@@ -286,7 +286,7 @@ body {
       }
     }
 
-    #toastr, #new {
+    #trollbox, #new {
       .hidden {display: none !important}
       & > .toasts-container > .toasts > .toast {max-width: 100% !important}
 

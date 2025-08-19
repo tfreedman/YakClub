@@ -196,14 +196,6 @@ function uploadProfileEvent(note) {
   });
 }
 
-function newNoteClose(event) {
-  let button = event.target.parentElement.parentElement.parentElement.parentElement.previousElementSibling;
-  button.classList.remove('hidden');
-
-  let div = event.target.parentElement.parentElement.parentElement.parentElement;
-  div.classList.add('hidden');
-}
-
 function validateToast(event) {
   event.preventDefault();
 
@@ -369,7 +361,6 @@ function displayToast(parent, data, note) {
   reply.onclick = function() {
     window.node = this;
     var form = this.parentElement.parentElement.parentElement.nextSibling.querySelector('& > .toast-new');
-    form.classList.remove('hidden');
   }
 
   const link = document.createElement('a');
@@ -461,7 +452,7 @@ initSqlJs(config).then(function(SQL){
   }
 
   var dbVersion = window.localStorage.getItem("version");
-  var dbstr = window.localStorage.getItem("toastr.sqlite");
+  var dbstr = window.localStorage.getItem("trollbox.sqlite");
 
   if (dbstr && dbVersion !== null && dbVersion == window.version) {
     console.log("Loading existing database - version numbers match");
@@ -475,7 +466,7 @@ initSqlJs(config).then(function(SQL){
   }
 
   var dbstr = toBinString(db.export());
-  window.localStorage.setItem("toastr.sqlite", dbstr);
+  window.localStorage.setItem("trollbox.sqlite", dbstr);
   window.localStorage.setItem("version", window.version);
   window.db = db;
 
@@ -563,7 +554,7 @@ initSqlJs(config).then(function(SQL){
       oneose() {
         if (dirty) {
           var dbstr = toBinString(window.db.export());
-          window.localStorage.setItem("toastr.sqlite", dbstr);
+          window.localStorage.setItem("trollbox.sqlite", dbstr);
         }
         fetchNotes();
         //h.close();
@@ -629,7 +620,7 @@ initSqlJs(config).then(function(SQL){
     document.querySelectorAll('#container article').forEach(l => {
       l.style.display = 'none';
     });
-    document.querySelector('#toastr').style.display = 'block';
+    document.querySelector('#trollbox').style.display = 'block';
 
     drawToasts(document.querySelector('.toasts-container'), window.users, mode);
   };
@@ -707,7 +698,7 @@ initSqlJs(config).then(function(SQL){
         oneose() {
           if (dirty) {
             var dbstr = toBinString(window.db.export());
-            window.localStorage.setItem("toastr.sqlite", dbstr);
+            window.localStorage.setItem("trollbox.sqlite", dbstr);
           }
           if (!window.browserExtension) {
             // Draw the new toast UI
@@ -1000,7 +991,7 @@ initSqlJs(config).then(function(SQL){
     if (pageTitle !== undefined) {
       if (pageTitle !== undefined) {
         document.querySelector('h1#title').innerHTML = pageTitle;
-        document.title = 'Toastr - ' + pageTitle;
+        document.title = 'Trollbox - ' + pageTitle;
       }
 
       if (pageSubTitle !== undefined) {
@@ -1082,7 +1073,6 @@ initSqlJs(config).then(function(SQL){
 
     const div = document.createElement('div');
     div.classList.add('toast-new');
-    div.classList.add('hidden');
 
     var url = '';
     var eTags = [];
@@ -1106,31 +1096,14 @@ initSqlJs(config).then(function(SQL){
             })
 
          innerHTML += `
-            <textarea type="text" name="message" placeholder="Write a reply..." required onkeyup="validateToast(event)"></textarea>
+            <textarea type="text" name="message" placeholder="Send a message..." required onkeyup="validateToast(event)"></textarea>
             <button type="submit" class="toast-submit-button" disabled>Reply</button>
-            <button type="button" class="toast-close-button" onclick="newNoteClose(event)">Close</button>
           </form>
         </div>
       </div>
     `
 
     div.innerHTML = innerHTML;
-
-    if (url != '' || params.showButton !== undefined) { // Do not add a New Toast button to replies - they have their own button
-      const button = document.createElement('button');
-      button.innerHTML = 'New Message';
-      button.setAttribute('type', 'button');
-
-      button.classList.add("toast-new-button");
-      button.onclick = function() {
-        let div = this.nextElementSibling;
-        div.classList.remove('hidden');
-
-        this.classList.add('hidden');
-      }
-
-      node.append(button);
-    }
     node.append(div);
   }
 });
