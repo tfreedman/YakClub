@@ -220,12 +220,28 @@ function validateProfile(event) {
   }
 }
 
+
+function deleteReplyContent(event) {
+  event.originalTarget.parentElement.querySelector('.heading').innerHTML = '';
+  event.originalTarget.parentElement.querySelector('.username').innerHTML = '';
+  event.originalTarget.parentElement.querySelector('.content').innerHTML = '';
+  event.originalTarget.parentElement.querySelector('.tags').innerHTML = '';
+  event.originalTarget.parentElement.classList.add('hidden');
+}
+
 // This technically handles notes and toasts
 function newNoteSubmit(event) {
   event.preventDefault();
 
   var data = event.target;
-  var e = event.target.querySelectorAll("input[name='e']");
+
+  // If you're replying to a note with a global reply box, the tags from the quoted note can be found in the global reply-details div
+  // If you're replying to a note with a local reply box,  the tags from the quoted note are already in the local form
+  if (event.target.querySelectorAll(".reply-details .tags input[name='e']").length > 0) {
+    var e = event.target.querySelectorAll(".reply-details .tags input[name='e']");
+  } else {
+    var e = event.target.querySelectorAll("input[name='e']");
+  }
 
   if (data.url.value != "") {
     // Root Note
@@ -287,13 +303,20 @@ function displayToast(parent, data, note) {
 
   var root = null;
   var hash = null;
+  var eTags = [];
+  var marker;
   note["tags"].forEach((tag) => {
     if (tag[0] == "e") {
+      eTags.push(tag);
       if (tag[3] && tag[3] == 'root') {
         root = tag[1];
+        marker = 'reply'; // If there's a root e tag defined, mark it as a reply instead.
       }
     }
   });
+  if (note) {
+    eTags.push(['e', note.id, '', marker, note.pubkey])
+  }
 
   if (root) {
     hash = window.NostrTools.nip19.noteEncode(root) + "-" + window.NostrTools.nip19.noteEncode(note["id"]);
@@ -319,6 +342,11 @@ function displayToast(parent, data, note) {
     imageClass = 'hashicon';
   }
 
+  var eTagString = '';
+  eTags.forEach(function (tag, index) {
+    eTagString += `<input type="hidden" name="e" data-event-id="${tag[1]}" data-relay-url="${tag[2]}" data-marker="${tag[3]}" data-pubkey="${tag[4]}" />`
+  })
+
   div.innerHTML = `
     <div>
       <div class="avatar">
@@ -333,6 +361,9 @@ function displayToast(parent, data, note) {
           <div class="pubkey">${window.NostrTools.nip19.npubEncode(data.pubkey)}</div>
         </header>
         <div class="caption">${data.message.replace(/\n/g, '<br />')}</div>
+        <div class="tags hidden">
+          ${eTagString}
+        </div>
       </div>
       <footer></footer>
     </div>
@@ -359,8 +390,16 @@ function displayToast(parent, data, note) {
   reply.innerHTML = '<img src="reply.svg" alt="Reply" />';
 
   reply.onclick = function() {
-    window.node = this;
-    var form = this.parentElement.parentElement.parentElement.nextSibling.querySelector('& > .toast-new');
+    if (false) { // FALSE if Trollbox, TRUE if Toastr
+      var form = this.parentElement.parentElement.parentElement.nextSibling.querySelector('& > .toast-new');
+    } else {
+      var form = document.querySelector('.toast-new-form');
+      form.querySelector('.reply-details .heading').innerHTML = 'Replying to...';
+      form.querySelector('.reply-details .username').innerHTML = this.parentElement.parentElement.querySelector('.content header .username').innerHTML;
+      form.querySelector('.reply-details .content').innerHTML = this.parentElement.parentElement.querySelector('.content .caption').innerHTML;
+      form.querySelector('.reply-details .tags').innerHTML = this.parentElement.parentElement.querySelector('.content .tags').innerHTML;
+      form.querySelector('.reply-details').classList.remove('hidden');
+    }
   }
 
   const link = document.createElement('a');
@@ -842,6 +881,24 @@ initSqlJs(config).then(function(SQL){
       emptyMsg = "";
 
       // This is called from within a thread - there's no need to set the page title or subtitle
+    } else if (mode.startsWith("messages-")) {
+      shouldShowHeadings = false;
+      shouldShowMessages = false;
+
+      console.log('Loading messages for ' + mode.substring(9));
+      var dirty = false;
+      var replies = [];
+
+      // TODO: rewrite this to not use LIKE, and properly search for replies
+      // This is only doable with an index of tags though.
+      // {kinds: [1], '#e': [mode.substring(9), "", "root/reply"]}
+
+      stmt = db.prepare("SELECT * FROM notes WHERE kind = 42 AND note LIKE $noteid ORDER BY created_at ASC");
+      stmt.bind({$noteid: '%' + mode.substring(9) + '%'});
+
+      emptyMsg = "";
+
+      // This is called from within a thread - there's no need to set the page title or subtitle
     }
 
     var row;
@@ -863,6 +920,20 @@ initSqlJs(config).then(function(SQL){
       // the note directly, and short circuit rendering if it isn't actually what you wanted.
 
       var parent = '';
+
+
+      if (mode.startsWith("messages-")) {
+        // Copy all of the e Tags from the references in the parent post
+        event["tags"].forEach((tag) => {
+          if (tag[0] == "e" && tag[3] == "root") {
+            parent = tag[1];
+          }
+        });
+
+        if (parent != mode.substring(9)) {
+          continue; // Cancel rendering if the parent isn't actually an exact match.
+        }
+      }
 
       if (mode.startsWith("replies-")) {
         // Copy all of the e Tags from the references in the parent post
@@ -977,10 +1048,12 @@ initSqlJs(config).then(function(SQL){
 
         // Add the parent post itself as a reference
         eTags.push(['e', event.id, '', marker, event.pubkey])
-        newNote(children, {eTags: eTags});
-        drawToasts(children, knownUsers, "replies-" + event.id);
+        if (false) { // TRUE if Toastr, FALSE if Trollbox
+          newNote(children, {eTags: eTags});
+        }
+        drawToasts(document.querySelector('.toasts'), knownUsers, "messages-" + event.id);
 
-        if (children.querySelector('& > .toasts').children.length == 0 && mode.startsWith('toast-')) {
+        if (document.querySelector('.toasts').children.length == 0 && mode.startsWith('toast-')) {
           // Add text if there are currently no messages.
           showEmptyMessage = true;
           emptyMsg = 'no messages (yet) - why not be the first to write one?'
@@ -1082,14 +1155,24 @@ initSqlJs(config).then(function(SQL){
       eTags = params.eTags;
     }
 
+    var renderEtags = true; // FALSE if Trollbox, TRUE if Toastr
+
     var innerHTML = `
       <div>
         <img class="avatar" src="${avatarURL}" />
         <div class="content">
           <form class="toast-new-form" autocomplete="off" onsubmit="newNoteSubmit(event)" action="">
+            <div class="reply-details hidden">
+              <div class="tags"></div>
+              <button type="button" onclick="deleteReplyContent(event)">X</button>
+              <p class="heading"></p>
+              <p class="username"></p>
+              <div class="content"></div>
+            </div>
+
             <input type="hidden" name="url" value="${url}" placeholder="URL" />
           `
-            eTags.forEach(function (tag, index) {
+            renderEtags && eTags.forEach(function (tag, index) {
               innerHTML += `
             <input type="hidden" name="e" data-event-id="${tag[1]}" data-relay-url="${tag[2]}" data-marker="${tag[3]}" data-pubkey="${tag[4]}" />
           `
