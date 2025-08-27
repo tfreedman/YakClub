@@ -298,7 +298,7 @@ function uploadNote(data, note, parent) {
   });
 }
 
-function displayToast(parent, data, note) {
+function displayToast(parent, data, note, params) {
   const div = document.createElement('div');
 
   var root = null;
@@ -347,25 +347,75 @@ function displayToast(parent, data, note) {
     eTagString += `<input type="hidden" name="e" data-event-id="${tag[1]}" data-relay-url="${tag[2]}" data-marker="${tag[3]}" data-pubkey="${tag[4]}" />`
   })
 
+
+  // If a note was written by the same user, we can skip displaying their npub / username again - necessary in chat mode
+  var showUser = '';
+  if (params.lastPubkey == data.pubkey) {
+    showUser = 'hidden';
+  }
+
+  // If a note was written within a short timespan of the previous note, we can skip displaying the timestamp.
+  var showTime = '';
+  if (params.lastTimestamp + 1 > data.created_at) {
+    showTime = 'opacity: 0';
+    showUser = '';
+  }
+
+  var lastTimestampDate = new Date(0);
+  lastTimestampDate.setUTCSeconds(params.lastTimestamp)
+
+  var epochTimestamp = new Date(0);
+  epochTimestamp.setUTCSeconds(data.created_at);
+
+  var date = null;
+
+  if (lastTimestampDate.toDateString() != epochTimestamp.toDateString()) {
+    date = document.createElement('div');
+    date.classList.add('date');
+
+    var epochTimestamp = new Date(0);
+    epochTimestamp.setUTCSeconds(data.created_at);
+
+    date.innerHTML = `
+      <div>
+        <div class="date">${epochTimestamp.toDateString()}</div>
+      </div>
+    `
+  }
+
+  var author = null;
+
+  if (showUser == '') {
+    author = document.createElement('div');
+    author.classList.add('author');
+    author.innerHTML = `
+      <div>
+        <div class="avatar">
+          <img src="${data.avatarURL}" class="${imageClass}"/>
+        </div>
+        <div class="content">
+          <header>
+            <div class="details">
+              <span class="username">${data.username}</span>
+            </div>
+            <div class="pubkey">${window.NostrTools.nip19.npubEncode(data.pubkey)}</div>
+          </header>
+        </div>
+      </div>
+    `
+  }
+
+
   div.innerHTML = `
     <div>
-      <div class="avatar">
-        <img src="${data.avatarURL}" class="${imageClass}"/>
-      </div>
       <div class="content">
-        <header>
-          <div class="details">
-            <span class="username left">${data.username}</span>
-            <span class="created_at right"><time datetime="${epoch_timestamp}">${epoch_timestamp.toLocaleString()}</time></span>
-          </div>
-          <div class="pubkey">${window.NostrTools.nip19.npubEncode(data.pubkey)}</div>
-        </header>
+        <div class="created_at" style="${showTime}"><time datetime="${epoch_timestamp}">${(epochTimestamp.getHours() < 10 ? '0' : '') + epochTimestamp.getHours()}:${(epochTimestamp.getMinutes() < 10 ? '0' : '') + epochTimestamp.getMinutes()}</time></div>
         <div class="caption">${data.message.replace(/\n/g, '<br />')}</div>
+        <footer></footer>
         <div class="tags hidden">
           ${eTagString}
         </div>
       </div>
-      <footer></footer>
     </div>
   `
   const permalink = document.createElement('a');
@@ -414,6 +464,16 @@ function displayToast(parent, data, note) {
   div.querySelector('footer').prepend(link)
   div.querySelector('footer').prepend(reply)
   div.querySelector('footer').prepend(permalink)
+
+  if (date !== null) {
+    parent.appendChild(date);
+  }
+
+  // Chat messages display the author above the post, to allow for multiple posts from one person in a row.
+  if (author !== null) {
+    parent.appendChild(author);
+  }
+
   parent.appendChild(div)
 }
 
@@ -903,6 +963,9 @@ initSqlJs(config).then(function(SQL){
 
     var row;
 
+    var lastPubkey = null;
+    var lastTimestamp = null;
+
     while(true) {
       if (stmt.step()) {
         row = stmt.getAsObject();
@@ -1020,7 +1083,9 @@ initSqlJs(config).then(function(SQL){
         submitterLink.dataset.pubkey = window.NostrTools.nip19.npubEncode(event.pubkey);
 
       } else {
-        displayToast(container.querySelector('.toasts'), {username: username, pubkey: event.pubkey, message: event.content, avatarURL: avatarURL, created_at: event.created_at}, event);
+        displayToast(container.querySelector('.toasts'), {username: username, pubkey: event.pubkey, message: event.content, avatarURL: avatarURL, created_at: event.created_at}, event, {lastPubkey: lastPubkey, lastTimestamp: lastTimestamp});
+        lastPubkey = event.pubkey;
+        lastTimestamp = event.created_at;
       }
 
       if (shouldShowMessages) {
