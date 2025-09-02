@@ -402,6 +402,7 @@ body {
             display: flex;
             flex-direction: row;
             align-items: flex-end;
+            padding: 2px;
             width: 100%;
 
             .caption {flex-grow: 1}

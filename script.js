@@ -197,14 +197,22 @@ function uploadProfileEvent(note) {
 }
 
 function validateToast(event) {
-  event.preventDefault();
-
   var data = event.target.parentElement;
 
-  if (data.checkValidity()) {
-    data.querySelector('.toast-submit-button').disabled = false;
-  } else {
-    data.querySelector('.toast-submit-button').disabled = true;
+  if (false) { // Toastr
+    event.preventDefault();
+    if (data.checkValidity()) {
+      data.querySelector('.toast-submit-button').disabled = false;
+    } else {
+      data.querySelector('.toast-submit-button').disabled = true;
+    }
+  } else { // Trollbox
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      data.requestSubmit();
+    } else {
+      // Do nothing
+    }
   }
 }
 
@@ -1187,8 +1195,8 @@ initSqlJs(config).then(function(SQL){
         <img class="avatar" src="${avatarURL}" />
         <div class="content">
           <form class="toast-new-form" autocomplete="off" onsubmit="newNoteSubmit(event)" action="">
-            <input type="url" name="url" value="" placeholder="URL" required onkeyup="validateToast(event)"></input>
-            <input type="text" name="title" placeholder="Write a title..." required onkeyup="validateToast(event)"></input>
+            <input type="url" name="url" value="" placeholder="URL" required onkeydown="validateToast(event)"></input>
+            <input type="text" name="title" placeholder="Write a title..." required onkeydown="validateToast(event)"></input>
             <button type="submit" class="toast-submit-button" disabled>Toast</button>
           </form>
         </div>
@@ -1244,7 +1252,7 @@ initSqlJs(config).then(function(SQL){
             })
 
          innerHTML += `
-            <textarea type="text" name="message" placeholder="Send a message..." required onkeyup="validateToast(event)"></textarea>
+            <textarea type="text" name="message" placeholder="Send a message..." required onkeydown="validateToast(event)"></textarea>
             <button type="submit" class="toast-submit-button" disabled>Reply</button>
           </form>
         </div>
