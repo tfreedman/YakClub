@@ -200,16 +200,13 @@ function validateToast(event) {
   var data = event.target.parentElement;
 
   if (false) { // Toastr
-    event.preventDefault();
-    if (data.checkValidity()) {
-      data.querySelector('.toast-submit-button').disabled = false;
-    } else {
-      data.querySelector('.toast-submit-button').disabled = true;
-    }
+    //Do nothing
   } else { // Trollbox
     if (event.key === "Enter" && !event.shiftKey) {
       event.preventDefault();
-      data.requestSubmit();
+      if (data.checkValidity()) {
+        data.requestSubmit();
+      }
     } else {
       // Do nothing
     }
@@ -1252,8 +1249,8 @@ initSqlJs(config).then(function(SQL){
             })
 
          innerHTML += `
-            <textarea type="text" name="message" placeholder="Send a message..." required onkeydown="validateToast(event)"></textarea>
-            <button type="submit" class="toast-submit-button" disabled>Reply</button>
+            <textarea type="text" name="message" placeholder="Send a message..." required minlength="1" onkeydown="validateToast(event)"></textarea>
+            <button type="submit" class="toast-submit-button">Reply</button>
           </form>
         </div>
       </div>

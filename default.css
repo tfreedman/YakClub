@@ -231,13 +231,14 @@ body {
       padding: 10px;
       background: #cc0033;
       border-radius: 5px;
-      &:hover {
-        background: #ff0040;
-      }
+      opacity: 0.5;
       transition: all 0.5s;
+    }
+
+    form:valid button {
+      opacity: 1;
+      &:hover {background: #ff0040}
       &:active {background: #990026}
-      &:disabled {opacity: 0.5}
-      &:disabled:hover {background: #cc0033}
     }
 
     #settings {
