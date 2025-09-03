@@ -293,19 +293,19 @@ function uploadNote(data, note, parent) {
     });
 
     if (isToast) {
-      window.importToast(note);
+      window.importToast(note, window.hasFinishedLoading);
       document.getElementById('search-bar').value = window.NostrTools.nip19.noteEncode(note["id"]);
       history.pushState({hash: note["id"], title: document.title}, '', '#' + note["id"]);
     } else {
-      window.importNote(note);
+      window.importNote(note, window.hasFinishedLoading); // if the page has finished loading, save the DB in response to any change.
     }
 
     if (false) { // If Toastr
       searchResults(document.getElementById('search-bar').value);
     } else { // If Trollbox
       searchResults(document.getElementById('search-bar').value);
-//      drawToasts(document.querySelector('.toasts-container'), window.users, 'messages-'); // TODO
-      console.log('wut do');
+      // drawToasts(document.querySelector('.toasts-container'), window.users, 'messages-'); // TODO
+      // TODO: right now when we redraw the page, we replace the new message field with a new one. 
     }
     data.reset();
   });
@@ -503,7 +503,7 @@ async function writeClipboardText(text) {
 }
 
 initSqlJs(config).then(function(SQL){
-  window.importToast = function(value, index, array) {
+  window.importToast = function(value, immediateWrite) {
     var note = JSON.stringify(value);
 
     var taggedUrl = '';
@@ -518,9 +518,15 @@ initSqlJs(config).then(function(SQL){
 
     console.log('Inserting ' + value['id'] + ' into Toasts DB...');
     db.run("INSERT OR IGNORE INTO toasts (id, created_at, domain, url, pubkey, kind, note) VALUES (?, ?, ?, ?, ?, ?, ?)", [value['id'], value['created_at'], domain, taggedUrl, value['pubkey'], value['kind'], note]);
+
+    if (immediateWrite) {
+      var dbstr = toBinString(window.db.export());
+      window.localStorage.setItem("trollbox.sqlite", dbstr);
+    }
   }
 
-  window.importNote = function(value, index, array) {
+  window.importNote = function(value, immediateWrite) {
+    var dirty = false;
     var note = JSON.stringify(value);
     if (value['kind'] == 0) {
       var existing_note_length = db.exec("SELECT * FROM notes WHERE pubkey = ? AND kind = 0", [value['pubkey']]).length
@@ -531,6 +537,7 @@ initSqlJs(config).then(function(SQL){
           displayProfile(window.pubKey);
         }
         db.run("INSERT INTO notes (id, created_at, pubkey, kind, note) VALUES (?, ?, ?, ?, ?)", [value['id'], value['created_at'], value['pubkey'], value['kind'], note]);
+        dirty = true;
         console.log('Adding ' + value['pubkey'] + ' to window.users...');
       } else {
         console.log('Updating ' + value['id'] + ' into Notes DB...');
@@ -539,6 +546,7 @@ initSqlJs(config).then(function(SQL){
           displayProfile(window.pubKey);
         }
         db.run("UPDATE notes SET id = ? created_at = ?, kind = ?, note = ? WHERE pubkey = ? AND created_at < ?)", [value['id'], value['created_at'], value['kind'], note, value['pubkey'], value['created_at']]);
+        dirty = true;
         console.log('Adding ' + value['pubkey'] + ' to window.users...');
       }
     } else if (value['kind'] == 42) {
@@ -557,9 +565,14 @@ initSqlJs(config).then(function(SQL){
 
       console.log('Inserting ' + value['id'] + ' into Notes DB...');
       db.run("INSERT INTO notes (id, created_at, pubkey, kind, note) VALUES (?, ?, ?, ?, ?)", [value['id'], value['created_at'], value['pubkey'], value['kind'], note]);
+      dirty = true;
       console.log('Adding ' + value['id'] + ' to notes');
     } else {
       console.log('Not inserting ' + value['id'] + ' into Notes DB - not a valid kind 0 event'); // Worry about non-kind 0 stuff later
+    }
+    if (dirty && immediateWrite) {
+      var dbstr = toBinString(window.db.export());
+      window.localStorage.setItem("trollbox.sqlite", dbstr);
     }
   }
 
@@ -659,7 +672,7 @@ initSqlJs(config).then(function(SQL){
     {
       onevent(event) {
         if (event && event.pubkey && event.content && event.kind == 1 && window.NostrTools.verifyEvent(event, event.pubkey) && event.created_at > 1750046400) {
-          importToast(event);
+          importToast(event, window.hasFinishedLoading); // if the page has finished loading, save the DB in response to any change.
           dirty = true;
         }
       },
@@ -691,7 +704,7 @@ initSqlJs(config).then(function(SQL){
       {
         onevent(event) {
           if (event && event.pubkey && event.content && event.kind == 42 && window.NostrTools.verifyEvent(event, event.pubkey)) {
-            importNote(event);
+            importNote(event, window.hasFinishedLoading); // if the page has finished loading, save the DB in response to any change.
             if (window.hasFinishedLoading) { // Trigger a redraw if this is after the initial load...
               if (document.getElementById('search-bar').value == "") { // If yes
                 drawToasts(document.querySelector('.toasts-container'), window.users, "recent");
@@ -809,7 +822,7 @@ initSqlJs(config).then(function(SQL){
       {
         onevent(event) {
           if (event && event.pubkey && event.kind == 0) {
-            importNote(event);
+            importNote(event, window.hasFinishedLoading); // if the page has finished loading, save the DB in response to any change.
             dirty = true;
           }
         },
