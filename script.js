@@ -1,3 +1,4 @@
+window.mode = "Trollbox";
 var users = {};
 window.pool = null;
 window.version = 2;
@@ -200,9 +201,9 @@ function uploadProfileEvent(note) {
 function validateToast(event) {
   var data = event.target.parentElement;
 
-  if (false) { // Toastr
+  if (window.mode == "Toastr") {
     //Do nothing
-  } else { // Trollbox
+  } else if (window.mode == "Trollbox") {
     if (event.key === "Enter" && !event.shiftKey) {
       event.preventDefault();
       if (data.checkValidity()) {
@@ -300,9 +301,9 @@ function uploadNote(data, note, parent) {
       window.importNote(note, window.hasFinishedLoading); // if the page has finished loading, save the DB in response to any change.
     }
 
-    if (false) { // If Toastr
+    if (window.mode == "Toastr") {
       searchResults(document.getElementById('search-bar').value);
-    } else { // If Trollbox
+    } else if (window.mode == "Trollbox") {
       searchResults(document.getElementById('search-bar').value);
       // drawToasts(document.querySelector('.toasts-container'), window.users, 'messages-'); // TODO
       // TODO: right now when we redraw the page, we replace the new message field with a new one. 
@@ -453,9 +454,9 @@ function displayToast(parent, data, note, params) {
   reply.innerHTML = '<img src="reply.svg" alt="Reply" />';
 
   reply.onclick = function() {
-    if (false) { // FALSE if Trollbox, TRUE if Toastr
+    if (window.mode == "Trollbox") {
       var form = this.parentElement.parentElement.parentElement.nextSibling.querySelector('& > .toast-new');
-    } else {
+    } else if (window.mode == "Toastr") {
       var form = document.querySelector('.toast-new-form');
       form.querySelector('.reply-details .heading').innerHTML = 'Replying to...';
       form.querySelector('.reply-details .username').innerHTML = this.parentElement.parentElement.querySelector('.content header .username').innerHTML;
@@ -1148,7 +1149,7 @@ initSqlJs(config).then(function(SQL){
 
         // Add the parent post itself as a reference
         eTags.push(['e', event.id, '', marker, event.pubkey])
-        if (false) { // TRUE if Toastr, FALSE if Trollbox
+        if (window.mode == "Toastr") {
           newNote(children, {eTags: eTags});
         }
         drawToasts(document.querySelector('.toasts'), knownUsers, "messages-" + event.id);
@@ -1255,7 +1256,11 @@ initSqlJs(config).then(function(SQL){
       eTags = params.eTags;
     }
 
-    var renderEtags = true; // FALSE if Trollbox, TRUE if Toastr
+    if (window.mode == "Trollbox") {
+      var renderEtags = false;
+    } else if (window.mode == "Toastr") {
+      var renderEtags = true;
+    }
 
     var innerHTML = `
       <div>
