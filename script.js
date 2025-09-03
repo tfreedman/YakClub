@@ -1,6 +1,7 @@
 var users = {};
 window.pool = null;
 window.version = 2;
+window.hasFinishedLoading = false;
 var pubKey;
 
 var showSearchIcon = true;
@@ -206,6 +207,7 @@ function validateToast(event) {
       event.preventDefault();
       if (data.checkValidity()) {
         data.requestSubmit();
+        document.querySelectorAll('.toast-new-form textarea')[0].focus();
       }
     } else {
       // Do nothing
@@ -298,7 +300,13 @@ function uploadNote(data, note, parent) {
       window.importNote(note);
     }
 
-    searchResults(document.getElementById('search-bar').value);
+    if (false) { // If Toastr
+      searchResults(document.getElementById('search-bar').value);
+    } else { // If Trollbox
+      searchResults(document.getElementById('search-bar').value);
+//      drawToasts(document.querySelector('.toasts-container'), window.users, 'messages-'); // TODO
+      console.log('wut do');
+    }
     data.reset();
   });
 }
@@ -684,13 +692,20 @@ initSqlJs(config).then(function(SQL){
         onevent(event) {
           if (event && event.pubkey && event.content && event.kind == 42 && window.NostrTools.verifyEvent(event, event.pubkey)) {
             importNote(event);
+            if (window.hasFinishedLoading) { // Trigger a redraw if this is after the initial load...
+              if (document.getElementById('search-bar').value == "") { // If yes
+                drawToasts(document.querySelector('.toasts-container'), window.users, "recent");
+              } else { // If no.
+                searchResults(document.getElementById('search-bar').value);
+              }
+            }
           }
         },
         oneose() {
           console.log('EOSE on notes/messages - Calling fetchAuthorInfo...');
           fetchAuthorInfo();
 
-          h.close();
+          //h.close();
         }
       }
     )
@@ -725,7 +740,6 @@ initSqlJs(config).then(function(SQL){
       l.style.display = 'none';
     });
     document.querySelector('#trollbox').style.display = 'block';
-
     drawToasts(document.querySelector('.toasts-container'), window.users, mode);
   };
 
@@ -804,24 +818,27 @@ initSqlJs(config).then(function(SQL){
             var dbstr = toBinString(window.db.export());
             window.localStorage.setItem("trollbox.sqlite", dbstr);
           }
-          if (!window.browserExtension) {
-            // Draw the new toast UI
-            newToast(document.querySelector('#newToastContainer'), {url: ''});
+          if (!window.hasFinishedLoading) {
+            if (!window.browserExtension) {
+              // Draw the new toast UI
+              newToast(document.querySelector('#newToastContainer'), {url: ''});
 
-            // Ready to draw page contents - has someone attempted a search (via the URL slug) ?
-            if (window.location.hash) {
-              document.getElementById('search-bar').value = window.location.hash.substring(1, window.location.hash.length)
-            } else {
-              // Fragment doesn't exist
-            }
+              // Ready to draw page contents - has someone attempted a search (via the URL slug) ?
+              if (window.location.hash) {
+                document.getElementById('search-bar').value = window.location.hash.substring(1, window.location.hash.length)
+              } else {
+                // Fragment doesn't exist
+              }
 
-            if (document.getElementById('search-bar').value == "") { // If yes
-              drawToasts(document.querySelector('.toasts-container'), window.users, "recent");
-            } else { // If no.
-              searchResults(document.getElementById('search-bar').value);
+              if (document.getElementById('search-bar').value == "") { // If yes
+                drawToasts(document.querySelector('.toasts-container'), window.users, "recent");
+              } else { // If no.
+                searchResults(document.getElementById('search-bar').value);
+              }
             }
+            window.hasFinishedLoading = true;
           }
-          h.close();
+          //h.close();
         }
       }
     )
