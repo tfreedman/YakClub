@@ -731,7 +731,18 @@ initSqlJs(config).then(function(SQL){
     if (!searchValue || searchValue == "" || searchValue == "https://" || searchValue == "http://") {
       mode = 'recent';
     } else if ((searchValue.startsWith('https://') || searchValue.startsWith('http://')) && (searchValue.split("/").length - 1) > 2) {
-      mode = 'url-' + searchValue;
+      if (window.mode == "Toastr") {
+        mode = 'url-' + searchValue;
+      } else if (window.mode == "Trollbox") {
+        // Trollbox only supports one chat room per domain, so URL-mode isn't a thing
+        if (searchValue.startsWith('https://')) {
+          searchValue = searchValue.substring(8, searchValue.length);
+        } else if (searchValue.startsWith('http://')) {
+          searchValue = searchValue.substring(7, searchValue.length);
+        }
+        searchValue = searchValue.split('/')[0]
+        mode = 'domain-' + searchValue;
+      }
     } else if (searchValue.startsWith('npub')) {
       mode = 'profile-' + searchValue;
     } else if (searchValue.startsWith('note') || searchValue.startsWith('nevent')) {
