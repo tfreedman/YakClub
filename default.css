@@ -333,6 +333,11 @@ body {
       .toast-new, .note, .author {
         width: 100%;
 
+        &:hover footer a {
+          transition: all 0.5s;
+          opacity: 0.2;
+        }
+
         .toasts > div:last-child {margin-bottom: 0}
 
         button {
@@ -394,7 +399,7 @@ body {
 
             a {
               flex-basis: 32%;
-              opacity: 0.2;
+              opacity: 0;
               margin-bottom: 2px;
               &:hover {opacity: 1}
 
