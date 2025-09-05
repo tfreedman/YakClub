@@ -40,13 +40,13 @@
 
         <div class="toasts-container">
           <div class="toasts"></div>
-          <div class="toasts-loading"><p>Loading all toasts...</p></div>
+          <div class="toasts-loading"><p>Loading all channels...</p></div>
           <div class="toasts-empty">:(</div>
         </div>
       </article>
 
       <article id="new">
-        <h1>Create a Toast</h1>
+        <h1>Create a Channel</h1>
         <h2></h2>
 
         <div id="newToastContainer"></div>
@@ -124,9 +124,9 @@
           <p>For privacy reasons, Trollbox scrapes all known channels from the relays you're connected to, stores them in your browser, and then filters based on the exact domain you're looking at to avoid leaking search queries or your browser history.</p>
         </div>
 
-        <h2>Toasts</h2>
+        <h2>Channels</h2>
         <div class="about">
-          <p>A toast is defined as a kind 1 event, with tags <em>['r', &lt;URL&gt;], ['t', 'toastr'], ['subject', &lt;subject&gt;]</em>. Due to <a href="https://github.com/nostr-protocol/nips/issues/523">limitations in the Nostr protocol</a>, all toasts must be explicitly tagged toastr at this time. Responses to toasts are currently implemented as kind 42 events.</p>
+          <p>A channel is defined as a kind 40 event, with tags <em>['r', &lt;domain&gt;], ['t', 'trollbox']</em>. Due to <a href="https://github.com/nostr-protocol/nips/issues/523">limitations in the Nostr protocol</a>, all channels must be explicitly tagged trollbox at this time. Responses to channels are currently implemented as kind 42 events.</p>
 
           <p>Trollbox implements NIP-07. However, <em>browser extensions cannot interact with other browser extensions</em>, so the extension version of Trollbox requires your nsec / preferred nostr relays in order to work. This limitation does not apply to the web version, which is compatible with extensions like nos2x.</p>
         </div>
