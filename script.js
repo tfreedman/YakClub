@@ -899,25 +899,37 @@ initSqlJs(config).then(function(SQL){
 
     if (mode.startsWith("domain-")) {
       console.log("Filtering to domain name " + mode.substring(7));
-      emptyMsg = "Sorry, there are no toasts for the domain " + mode.substring(7);
       stmt = db.prepare("SELECT * FROM toasts WHERE kind = 1 AND domain = $domain ORDER BY created_at DESC");
       stmt.bind({$domain: mode.substring(7)});
 
       shouldShowHeadings = true;
       shouldShowMessages = false;
 
-      pageTitle = 'Search Results'
-      pageSubTitle = 'Domain: ' + mode.substring(7);
+      if (window.mode == "Toastr") {
+        emptyMsg = "Sorry, there are no toasts for the domain " + mode.substring(7);
+        pageTitle = 'Search Results'
+        pageSubTitle = 'Domain: ' + mode.substring(7);
+      } else if (window.mode == "Trollbox") {
+        emptyMsg = "Sorry, there are no channels for the domain " + mode.substring(7);
+        pageTitle = 'Search Results'
+        pageSubTitle = 'Domain: ' + mode.substring(7);
+      }
 
     } else if (mode == "recent") {
       stmt = db.prepare("SELECT * FROM toasts WHERE kind = 1 ORDER BY created_at DESC");
 
       shouldShowHeadings = true;
       shouldShowMessages = false;
-      emptyMsg = "Sorry, there are no recent toasts";
 
-      pageTitle = 'Recent Toasts'
-      pageSubTitle = '';
+      if (window.mode == "Toastr") {
+        emptyMsg = "Sorry, there are no recent toasts";
+        pageTitle = 'Recent Toasts'
+        pageSubTitle = '';
+      } else if (window.mode == "Trollbox") {
+        emptyMsg = "Sorry, there are no recent channels";
+        pageTitle = 'Recent Channels'
+        pageSubTitle = '';
+      }
     } else if (mode.startsWith("url-")) {
       stmt = db.prepare("SELECT * FROM toasts WHERE kind = 1 AND url = $url ORDER BY created_at DESC");
       console.log("Filtering to URL " + mode.substring(4));
@@ -933,8 +945,15 @@ initSqlJs(config).then(function(SQL){
       stmt = db.prepare("SELECT * FROM toasts WHERE kind = 1 AND pubkey = $pubkey ORDER BY created_at DESC");
       console.log("Filtering to profile " + mode.substring(8));
       var pubkey = window.NostrTools.nip19.decode(mode.substring(8)).data;
-      stmt.bind({$pubkey: pubkey});
-      emptyMsg = "Sorry, there are no toasts from profile " + mode.substring(8) + ' (' + pubkey + ')';
+      stmt.bind({$pubkey: pubkey})
+
+      if (window.mode == "Toastr") {
+        emptyMsg = "Sorry, there are no toasts from profile " + mode.substring(8) + ' (' + pubkey + ')';
+        pageTitle = 'Toasts from ' + username;
+      } else if (window.mode == "Trollbox") {
+        emptyMsg = "Sorry, there are no channels from profile " + mode.substring(8) + ' (' + pubkey + ')';
+        pageTitle = 'Channels from ' + username;
+      }
 
       shouldShowHeadings = true;
       shouldShowMessages = false;
@@ -948,7 +967,6 @@ initSqlJs(config).then(function(SQL){
         username = 'Unknown';
       }
 
-      pageTitle = 'Toasts from ' + username;
       pageSubTitle = mode.substring(8);
     } else if (mode.startsWith("toast")) {
       stmt = db.prepare("SELECT * FROM toasts WHERE kind = 1 AND id = $id ORDER BY created_at DESC");
@@ -982,7 +1000,11 @@ initSqlJs(config).then(function(SQL){
       // This is only doable with an index of tags though.
       // {kinds: [1], '#e': [mode.substring(8), "", "root/reply"]}
 
-      stmt = db.prepare("SELECT * FROM notes WHERE kind = 42 AND id <> $id AND note LIKE $noteid ORDER BY created_at ASC");
+      if (window.mode == "Toastr") {
+        stmt = db.prepare("SELECT * FROM notes WHERE kind = 1 AND id <> $id AND note LIKE $noteid ORDER BY created_at ASC");
+      } else if (window.mode == "Trollbox") {
+        stmt = db.prepare("SELECT * FROM notes WHERE kind = 42 AND id <> $id AND note LIKE $noteid ORDER BY created_at ASC");
+      }
       stmt.bind({$id: mode.substring(8), $noteid: '%' + mode.substring(8) + '%'});
 
       emptyMsg = "";
