@@ -1093,18 +1093,32 @@ initSqlJs(config).then(function(SQL){
       }
       if (shouldShowHeadings) {
         var article = document.createElement('div');
-        article.classList += 'toast'
 
-        var ccStmt = db.prepare("SELECT COUNT(*) FROM notes WHERE kind = 42 AND id <> $id AND note LIKE $noteid");
+        if (window.mode == "Toastr") {
+          var ccStmt = db.prepare("SELECT COUNT(*) FROM notes WHERE kind = 1 AND id <> $id AND note LIKE $noteid");
+          article.classList += 'toast'
+        } else if (window.mode == "Trollbox") {
+          var ccStmt = db.prepare("SELECT COUNT(*) FROM notes WHERE kind = 42 AND id <> $id AND note LIKE $noteid");
+          article.classList += 'toast'
+        }
         ccStmt.bind({$id: event.id, $noteid: '%' + event.id + '%'});
 
         if (ccStmt.step()) {var messagesCount = ccStmt.getAsObject()["COUNT(*)"]}
         var messagesString = '';
 
-        if (messagesCount != 1) {
-          messagesString = 'messages';
-        } else {
-          messagesString = 'message';
+
+        if (window.mode == "Toastr") {
+          if (messagesCount != 1) {
+            messagesString = 'comments';
+          } else {
+            messagesString = 'comment';
+          }
+        } else if (window.mode == "Trollbox") {
+          if (messagesCount != 1) {
+            messagesString = 'messages';
+          } else {
+            messagesString = 'message';
+          }
         }
 
         var epochTimestamp = new Date(0);
