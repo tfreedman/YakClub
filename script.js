@@ -318,6 +318,8 @@ function displayToast(parent, data, note, params) {
   var root = null;
   var hash = null;
   var eTags = [];
+  var isReply = false;
+  var inReplyTo;
   var marker;
   note["tags"].forEach((tag) => {
     if (tag[0] == "e") {
@@ -326,11 +328,34 @@ function displayToast(parent, data, note, params) {
         root = tag[1];
         marker = 'reply'; // If there's a root e tag defined, mark it as a reply instead.
       }
+      if (tag[3] && tag[3] == 'reply') {
+        inReplyTo = tag[1];
+        isReply = true;
+      }
     }
   });
   if (note) {
     eTags.push(['e', note.id, '', marker, note.pubkey])
   }
+
+
+  // When we render a note that happens to be a reply, we embed the context from the referenced note
+  // Only the last reply counts - if that note was also a reply, we ignore it.
+  if (isReply) {
+    stmt = window.db.prepare("SELECT * FROM notes WHERE id = $id");
+    stmt.bind({$id: inReplyTo});
+
+    var referencedNote;
+    while(true) {
+      if (stmt.step()) {
+        row = stmt.getAsObject();
+        referencedNote = JSON.parse(row.note);
+      } else {
+        break;
+      }
+    }
+  }
+
 
   if (root) {
     hash = window.NostrTools.nip19.noteEncode(root) + "-" + window.NostrTools.nip19.noteEncode(note["id"]);
@@ -360,7 +385,6 @@ function displayToast(parent, data, note, params) {
   eTags.forEach(function (tag, index) {
     eTagString += `<input type="hidden" name="e" data-event-id="${tag[1]}" data-relay-url="${tag[2]}" data-marker="${tag[3]}" data-pubkey="${tag[4]}" />`
   })
-
 
   // If a note was written by the same user, we can skip displaying their npub / username again - necessary in chat mode
   var showUser = '';
@@ -419,12 +443,18 @@ function displayToast(parent, data, note, params) {
     `
   }
 
-
-  div.innerHTML = `
+  var innerHTML = `
     <div>
       <div class="content">
         <div class="created_at" style="${showTime}"><time datetime="${epoch_timestamp}">${(epochTimestamp.getHours() < 10 ? '0' : '') + epochTimestamp.getHours()}:${(epochTimestamp.getMinutes() < 10 ? '0' : '') + epochTimestamp.getMinutes()}</time></div>
-        <div class="caption">${data.message.replace(/\n/g, '<br />')}</div>
+        <div class="caption">`
+
+      if (isReply && referencedNote !== undefined) {
+        innerHTML += `<div class="context">${referencedNote.content.replace(/\n/g, '<br />')}</div>`
+      }
+
+      innerHTML += `
+      ${data.message.replace(/\n/g, '<br />')}</div>
         <footer></footer>
         <div class="tags hidden">
           ${eTagString}
@@ -432,6 +462,9 @@ function displayToast(parent, data, note, params) {
       </div>
     </div>
   `
+
+  div.innerHTML = innerHTML;
+
   const permalink = document.createElement('a');
   permalink.innerHTML = '<img src="link.svg" alt="Permalink" />';
 
@@ -454,12 +487,13 @@ function displayToast(parent, data, note, params) {
   reply.innerHTML = '<img src="reply.svg" alt="Reply" />';
 
   reply.onclick = function() {
-    if (window.mode == "Trollbox") {
+    window.foo = this;
+    if (window.mode == "Toastr") {
       var form = this.parentElement.parentElement.parentElement.nextSibling.querySelector('& > .toast-new');
-    } else if (window.mode == "Toastr") {
+    } else if (window.mode == "Trollbox") {
       var form = document.querySelector('.toast-new-form');
       form.querySelector('.reply-details .heading').innerHTML = 'Replying to...';
-      form.querySelector('.reply-details .username').innerHTML = this.parentElement.parentElement.querySelector('.content header .username').innerHTML;
+      //TODO: FIXME form.querySelector('.reply-details .username').innerHTML = this.parentElement.parentElement.querySelector('.content header .username').innerHTML;
       form.querySelector('.reply-details .content').innerHTML = this.parentElement.parentElement.querySelector('.content .caption').innerHTML;
       form.querySelector('.reply-details .tags').innerHTML = this.parentElement.parentElement.querySelector('.content .tags').innerHTML;
       form.querySelector('.reply-details').classList.remove('hidden');
@@ -1096,10 +1130,10 @@ initSqlJs(config).then(function(SQL){
 
         if (window.mode == "Toastr") {
           var ccStmt = db.prepare("SELECT COUNT(*) FROM notes WHERE kind = 1 AND id <> $id AND note LIKE $noteid");
-          article.classList += 'toast'
+          article.classList += 'toast';
         } else if (window.mode == "Trollbox") {
           var ccStmt = db.prepare("SELECT COUNT(*) FROM notes WHERE kind = 42 AND id <> $id AND note LIKE $noteid");
-          article.classList += 'toast'
+          article.classList += 'toast';
         }
         ccStmt.bind({$id: event.id, $noteid: '%' + event.id + '%'});
 
@@ -1195,7 +1229,7 @@ initSqlJs(config).then(function(SQL){
         });
 
         // Add the parent post itself as a reference
-        eTags.push(['e', event.id, '', marker, event.pubkey])
+        eTags.push(['e', event.id, '', marker, event.pubkey]);
         if (window.mode == "Toastr") {
           newNote(children, {eTags: eTags});
         }
@@ -1303,8 +1337,10 @@ initSqlJs(config).then(function(SQL){
       eTags = params.eTags;
     }
 
+
+    // TODO: Remember if there are actually implementation differences between both products
     if (window.mode == "Trollbox") {
-      var renderEtags = false;
+      var renderEtags = true;
     } else if (window.mode == "Toastr") {
       var renderEtags = true;
     }
