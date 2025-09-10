@@ -311,7 +311,7 @@ function uploadNote(data, note, parent) {
     data.reset();
   });
 }
-
+//TODO: remove users
 function displayToast(parent, data, note, params) {
   const div = document.createElement('div');
 
@@ -450,7 +450,31 @@ function displayToast(parent, data, note, params) {
         <div class="caption">`
 
       if (isReply && referencedNote !== undefined) {
-        innerHTML += `<div class="context">${referencedNote.content.replace(/\n/g, '<br />')}</div>`
+        var replyUsername = 'Unknown';
+        var replyAvatarURL = null;
+        var imageClass = '';
+
+        if (params.users[referencedNote.pubkey]) {
+          var replyUser = JSON.parse(params.users[referencedNote.pubkey].content);
+          if (typeof replyUser.picture !== 'undefined') {
+            replyAvatarURL = replyUser.picture;
+          }
+          if (typeof replyUser.name !== 'undefined') {
+            replyUsername = replyUser.name;
+          }
+        }
+        if (replyAvatarURL === null) {
+          replyAvatarURL = hashicon(referencedNote.pubkey).toDataURL();
+          imageClass = 'hashicon';
+        }
+
+        innerHTML += `
+          <div class="context">
+            <div class="avatar">
+              <img src="${replyAvatarURL}" class="${imageClass}"/>
+            </div>
+            <span class="username">${replyUsername}</span> <span class="pubkey">(${window.NostrTools.nip19.npubEncode(referencedNote.pubkey)})</span><br />${referencedNote.content.replace(/\n/g, '<br />')}
+          </div>`
       }
 
       innerHTML += `
@@ -1087,7 +1111,6 @@ initSqlJs(config).then(function(SQL){
 
       var parent = '';
 
-
       if (mode.startsWith("messages-")) {
         // Copy all of the e Tags from the references in the parent post
         event["tags"].forEach((tag) => {
@@ -1200,7 +1223,10 @@ initSqlJs(config).then(function(SQL){
         submitterLink.dataset.pubkey = window.NostrTools.nip19.npubEncode(event.pubkey);
 
       } else {
-        displayToast(container.querySelector('.toasts'), {username: username, pubkey: event.pubkey, message: event.content, avatarURL: avatarURL, created_at: event.created_at}, event, {lastPubkey: lastPubkey, lastTimestamp: lastTimestamp});
+        // TODO: populate this
+        var isReply = false;
+        var reply = {};
+        displayToast(container.querySelector('.toasts'), {username: username, pubkey: event.pubkey, message: event.content, avatarURL: avatarURL, isReply: isReply, reply: reply, created_at: event.created_at}, event, {lastPubkey: lastPubkey, lastTimestamp: lastTimestamp, users: users});
         lastPubkey = event.pubkey;
         lastTimestamp = event.created_at;
       }
