@@ -208,9 +208,10 @@ function validateToast(event) {
       event.preventDefault();
       if (data.checkValidity()) {
         data.requestSubmit();
-        document.querySelectorAll('.toast-new-form textarea')[0].focus();
+        //document.querySelectorAll('.toast-new-form textarea')[0].focus();
       }
     } else {
+      console.log(event);
       // Do nothing
     }
   }
@@ -253,7 +254,12 @@ function newNoteSubmit(event) {
 
   if (data.url.value != "") {
     // Root Note
-    var e = {created_at: Math.floor(Date.now() / 1000), kind: 1, tags: [['r', data.url.value], ['t', 'toastr'], ['subject', data.title.value]], content: data.title.value};
+    if (window.mode == "Toastr") { // Root toasts exist for specific URLs
+      var e = {created_at: Math.floor(Date.now() / 1000), kind: 1, tags: [['r', data.url.value], ['t', 'toastr'], ['subject', data.title.value]], content: data.title.value};
+    } else if (window.mode == "Trollbox") { // Root channels exist for domain names
+      var url = new URL(data.url.value).hostname;
+      var e = {created_at: Math.floor(Date.now() / 1000), kind: 40, tags: [['r', url], ['t', 'trollbox']], content: url};
+    }
   } else if (e[0] && (e[0].dataset.marker == "reply" || e[0].dataset.marker == "root")) {
     // Reply
     var tags = [];
@@ -282,16 +288,26 @@ function newNoteSubmit(event) {
 function uploadNote(data, note, parent) {
   console.log("Sending " + JSON.stringify(note));
   Promise.any(window.pool.publish(relays, note)).then(relay => {
-    // When we upload a note, normally we'd have to keep track of state. 
+    // When we upload a note, normally we'd have to keep track of state.
     // If there are no messages, we'd have to remove the message asking you to be the first.
     // We'd also have to update the number of messages, etc. Or, we can cheat and just re-render everything.
 
     var isToast = false;
-    note["tags"].forEach((tag) => {
-      if (tag[0] == "t" && tag[1].toLowerCase().startsWith('toastr')) {
-        isToast = true;
+    if (window.mode == "Toastr") {
+      note["tags"].forEach((tag) => {
+        if (tag[0] == "t" && tag[1].toLowerCase().startsWith('toastr')) {
+          isToast = true;
+        }
+      });
+    } else if (window.mode == "Trollbox") {
+      if (note["kind"] == 40) {
+        note["tags"].forEach((tag) => {
+          if (tag[0] == "t" && tag[1].toLowerCase().startsWith('trollbox')) {
+            isToast = true;
+          }
+        });
       }
-    });
+    }
 
     if (isToast) {
       window.importToast(note, window.hasFinishedLoading);
@@ -572,8 +588,13 @@ initSqlJs(config).then(function(SQL){
       }
     });
 
-    const url = new URL(taggedUrl);
-    var domain = url.hostname.toLowerCase();
+    if (window.mode == "Toastr") {
+      const url = new URL(taggedUrl);
+      var domain = url.hostname.toLowerCase();
+    } else if (window.mode == "Trollbox") {
+      var url = 'test';
+      var domain = 'test';
+    }
 
     console.log('Inserting ' + value['id'] + ' into Toasts DB...');
     db.run("INSERT OR IGNORE INTO toasts (id, created_at, domain, url, pubkey, kind, note) VALUES (?, ?, ?, ?, ?, ?, ?)", [value['id'], value['created_at'], domain, taggedUrl, value['pubkey'], value['kind'], note]);
@@ -724,13 +745,23 @@ initSqlJs(config).then(function(SQL){
     displayProfile(pk);
   }
 
+  var filter;
+  var kind;
+  if (window.mode == "Toastr") {
+    kind = 1;
+    filter = {kinds: [kind], '#t': ["toastr"], since: 1750046400};
+  } else if (window.mode == "Trollbox") {
+    kind = 40;
+    filter = {kinds: [kind], '#t': ["trollbox"], since: 1750046400}
+  }
+
   var h = window.pool.subscribeMany(
     relays,[
-      {kinds: [1], '#t': ["toastr"], since: 1750046400}
+      filter
     ],
     {
       onevent(event) {
-        if (event && event.pubkey && event.content && event.kind == 1 && window.NostrTools.verifyEvent(event, event.pubkey) && event.created_at > 1750046400) {
+        if (event && event.pubkey && event.content && event.kind == 40 && window.NostrTools.verifyEvent(event, event.pubkey) && event.created_at > 1750046400) {
           importToast(event, window.hasFinishedLoading); // if the page has finished loading, save the DB in response to any change.
           dirty = true;
         }
@@ -748,11 +779,22 @@ initSqlJs(config).then(function(SQL){
 
   function fetchNotes() {
     var filters = [];
-    var stmt = window.db.prepare("SELECT * FROM toasts WHERE kind = 1");
+    var kind;
+    if (window.mode == "Toastr") {
+      var stmt = window.db.prepare("SELECT * FROM toasts WHERE kind = 1");
+      kind = 1; // children of toasts are also kind 1
+    } else if (window.mode == "Trollbox") {
+      var stmt = window.db.prepare("SELECT * FROM toasts WHERE kind = 40");
+      kind = 42; // children of channel messages are actually kind 42
+    }
     while(stmt.step()) {
       const row = stmt.getAsObject();
       var event = JSON.parse(row.note);
-      filters.push({kinds: [42], '#e': [event.id]});
+      if (window.mode == "Toastr") {
+        filters.push({kinds: [1], '#e': [event.id]});
+      } else if (window.mode == "Trollbox") {
+        filters.push({kinds: [42], '#e': [event.id]});
+      }
     }
 
     window.filters = filters;
@@ -762,7 +804,7 @@ initSqlJs(config).then(function(SQL){
       relays, filters,
       {
         onevent(event) {
-          if (event && event.pubkey && event.content && event.kind == 42 && window.NostrTools.verifyEvent(event, event.pubkey)) {
+          if (event && event.pubkey && event.content && event.kind == kind && window.NostrTools.verifyEvent(event, event.pubkey)) {
             importNote(event, window.hasFinishedLoading); // if the page has finished loading, save the DB in response to any change.
             if (window.hasFinishedLoading) { // Trigger a redraw if this is after the initial load...
               if (document.getElementById('search-bar').value == "") { // If yes
@@ -865,7 +907,12 @@ initSqlJs(config).then(function(SQL){
     var dirty = false;
 
     // Get the public keys of everyone who's written a toast
-    var stmt = db.prepare("SELECT * FROM toasts WHERE kind = 1");
+    if (window.mode == "Toastr") {
+      var stmt = db.prepare("SELECT * FROM toasts WHERE kind = 1");
+    } else if (window.mode == "Trollbox") {
+      var stmt = db.prepare("SELECT * FROM toasts WHERE kind = 40");
+    }
+
     while(stmt.step()) {
       const row = stmt.getAsObject();
       var event = JSON.parse(row.note);
@@ -873,7 +920,11 @@ initSqlJs(config).then(function(SQL){
     }
 
     // Get the public keys of everyone who's written a note
-    var stmt = db.prepare("SELECT * FROM notes WHERE kind = 42");
+    if (window.mode == "Toastr") {
+      var stmt = db.prepare("SELECT * FROM notes WHERE kind = 1");
+    } else if (window.mode == "Trollbox") {
+      var stmt = db.prepare("SELECT * FROM notes WHERE kind = 42");
+    }
     while(stmt.step()) {
       const row = stmt.getAsObject();
       var event = JSON.parse(row.note);
@@ -957,24 +1008,30 @@ initSqlJs(config).then(function(SQL){
 
     if (mode.startsWith("domain-")) {
       console.log("Filtering to domain name " + mode.substring(7));
-      stmt = db.prepare("SELECT * FROM toasts WHERE kind = 1 AND domain = $domain ORDER BY created_at DESC");
-      stmt.bind({$domain: mode.substring(7)});
-
-      shouldShowHeadings = true;
-      shouldShowMessages = false;
 
       if (window.mode == "Toastr") {
+        stmt = db.prepare("SELECT * FROM toasts WHERE kind = 1 AND domain = $domain ORDER BY created_at DESC");
         emptyMsg = "Sorry, there are no toasts for the domain " + mode.substring(7);
         pageTitle = 'Search Results'
         pageSubTitle = 'Domain: ' + mode.substring(7);
       } else if (window.mode == "Trollbox") {
+        stmt = db.prepare("SELECT * FROM toasts WHERE kind = 40 AND domain = $domain ORDER BY created_at DESC");
         emptyMsg = "Sorry, there are no channels for the domain " + mode.substring(7);
         pageTitle = 'Search Results'
         pageSubTitle = 'Domain: ' + mode.substring(7);
       }
 
+      stmt.bind({$domain: mode.substring(7)});
+
+      shouldShowHeadings = true;
+      shouldShowMessages = false;
+
     } else if (mode == "recent") {
-      stmt = db.prepare("SELECT * FROM toasts WHERE kind = 1 ORDER BY created_at DESC");
+      if (window.mode == "Toastr") {
+        stmt = db.prepare("SELECT * FROM toasts WHERE kind = 1 ORDER BY created_at DESC");
+      } else if (window.mode == "Trollbox") {
+        stmt = db.prepare("SELECT * FROM toasts WHERE kind = 40 ORDER BY created_at DESC");
+      }
 
       shouldShowHeadings = true;
       shouldShowMessages = false;
@@ -1000,7 +1057,11 @@ initSqlJs(config).then(function(SQL){
       pageTitle = 'Search Results'
       pageSubTitle = 'URL: ' + mode.substring(4);
     } else if (mode.startsWith("profile")) {
-      stmt = db.prepare("SELECT * FROM toasts WHERE kind = 1 AND pubkey = $pubkey ORDER BY created_at DESC");
+      if (window.mode == "Toastr") {
+        stmt = db.prepare("SELECT * FROM toasts WHERE kind = 1 AND pubkey = $pubkey ORDER BY created_at DESC");
+      } else if (window.mode == "Trollbox") {
+        stmt = db.prepare("SELECT * FROM toasts WHERE kind = 40 AND pubkey = $pubkey ORDER BY created_at DESC");
+      }
       console.log("Filtering to profile " + mode.substring(8));
       var pubkey = window.NostrTools.nip19.decode(mode.substring(8)).data;
       stmt.bind({$pubkey: pubkey})
@@ -1027,7 +1088,12 @@ initSqlJs(config).then(function(SQL){
 
       pageSubTitle = mode.substring(8);
     } else if (mode.startsWith("toast")) {
-      stmt = db.prepare("SELECT * FROM toasts WHERE kind = 1 AND id = $id ORDER BY created_at DESC");
+      if (window.mode == "Toastr") {
+        stmt = db.prepare("SELECT * FROM toasts WHERE kind = 1 AND id = $id ORDER BY created_at DESC");
+      } else if (window.mode == "Trollbox") {
+        stmt = db.prepare("SELECT * FROM toasts WHERE kind = 40 AND id = $id ORDER BY created_at DESC");
+      }
+
       var query = mode.split('-')[1];
 
       console.log("Filtering to toast " + query);
@@ -1322,6 +1388,13 @@ initSqlJs(config).then(function(SQL){
       avatarURL = 'circle-user.svg'
     }
 
+    var submitText;
+    if (window.mode == "Toastr") {
+      submitText = "Toast";
+    } else if (window.mode == "Trollbox") {
+      submitText = "Create";
+    }
+
     const div = document.createElement('div');
     div.classList.add('toast-new');
 
@@ -1329,10 +1402,16 @@ initSqlJs(config).then(function(SQL){
       <div>
         <img class="avatar" src="${avatarURL}" />
         <div class="content">
-          <form class="toast-new-form" autocomplete="off" onsubmit="newNoteSubmit(event)" action="">
+          <form class="toast-new-form" autocomplete="off" onsubmit="newNoteSubmit(event)" action="">`
+
+          if (window.mode == "Toastr") { innerHTML += `
             <input type="url" name="url" value="" placeholder="URL" required onkeydown="validateToast(event)"></input>
             <input type="text" name="title" placeholder="Write a title..." required onkeydown="validateToast(event)"></input>
-            <button type="submit" class="toast-submit-button" disabled>Toast</button>
+          `} else if (window.mode == "Trollbox") { innerHTML += `
+            <input type="text" name="url" value="" placeholder="Domain name or URL" required onkeydown="validateToast(event)"></input>
+          `}
+
+innerHTML += `<button type="submit" class="toast-submit-button" disabled>${submitText}</button>
           </form>
         </div>
       </div>
