@@ -1411,7 +1411,7 @@ initSqlJs(config).then(function(SQL){
             <input type="text" name="url" value="" placeholder="Domain name or URL" required onkeydown="validateToast(event)"></input>
           `}
 
-innerHTML += `<button type="submit" class="toast-submit-button" disabled>${submitText}</button>
+innerHTML += `<button type="submit" class="toast-submit-button">${submitText}</button>
           </form>
         </div>
       </div>
