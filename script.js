@@ -877,7 +877,7 @@ initSqlJs(config).then(function(SQL){
   }
 
   window.addEventListener('popstate', function(event) {
-    if (event.state) { 
+    if (event.state) {
       state = event.state;
       document.title = state.title;
       document.getElementById('search-bar').value = state.hash;
@@ -1029,22 +1029,18 @@ initSqlJs(config).then(function(SQL){
     } else if (mode == "recent") {
       if (window.mode == "Toastr") {
         stmt = db.prepare("SELECT * FROM toasts WHERE kind = 1 ORDER BY created_at DESC");
-      } else if (window.mode == "Trollbox") {
-        stmt = db.prepare("SELECT * FROM toasts WHERE kind = 40 ORDER BY created_at DESC");
-      }
-
-      shouldShowHeadings = true;
-      shouldShowMessages = false;
-
-      if (window.mode == "Toastr") {
         emptyMsg = "Sorry, there are no recent toasts";
         pageTitle = 'Recent Toasts'
         pageSubTitle = '';
       } else if (window.mode == "Trollbox") {
+        stmt = db.prepare("SELECT * FROM toasts WHERE kind = 40 ORDER BY created_at DESC");
         emptyMsg = "Sorry, there are no recent channels";
         pageTitle = 'Recent Channels'
         pageSubTitle = '';
       }
+
+      shouldShowHeadings = true;
+      shouldShowMessages = false;
     } else if (mode.startsWith("url-")) {
       stmt = db.prepare("SELECT * FROM toasts WHERE kind = 1 AND url = $url ORDER BY created_at DESC");
       console.log("Filtering to URL " + mode.substring(4));
@@ -1357,7 +1353,12 @@ initSqlJs(config).then(function(SQL){
         if (mode.startsWith('url-') || (window.mode == "Trollbox" && mode.startsWith('domain-'))) {
           var newButton = '<button onclick=\'document.querySelectorAll("#topbar nav .right > a")[0].click()\'>Create</button>'
 
-          document.querySelector('#newToastContainer input[name="url"]').value = mode.substring(4);
+          if (window.mode == "Toastr") {
+            document.querySelector('#newToastContainer input[name="url"]').value = mode.substring(4);
+          } else if (window.mode == "Trollbox") {
+            document.querySelector('#newToastContainer input[name="url"]').value = mode.substring(7);
+          }
+
           container.querySelector('.toasts-empty').innerHTML += '<br />' + newButton;
         }
 
