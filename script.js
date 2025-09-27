@@ -815,17 +815,32 @@ initSqlJs(config).then(function(SQL){
               if (document.getElementById('search-bar').value == "") { // If yes
                 drawToasts(document.querySelector('.toasts-container'), window.users, "recent");
               } else { // If no.
-                var shouldScroll = false;
-                // If the user is at the bottom of the page, we should scroll down again if a new message is received.
-                if (document.documentElement.scrollTop == document.documentElement.scrollTopMax) {
-                  shouldScroll = true;
-                }
-                searchResults(document.getElementById('search-bar').value);
-                if (shouldScroll) {
-                  window.scrollTo({
-                    top: document.body.scrollHeight,
-                    behavior: 'smooth'
+
+                // Only redraw rooms we're actually in if a new message comes in - otherwise, just ignore it.
+                var weShouldRedraw = false;
+                if (document.getElementById('search-bar').value.startsWith('note')) {
+                  var activeRoom = window.NostrTools.nip19.decode(document.getElementById('search-bar').value).data;
+
+                  event["tags"].forEach((tag) => {
+                    if (tag[0] == "e" && tag[3] && tag[3] == 'root' && tag[1] == activeRoom) {
+                      weShouldRedraw = true;
+                    }
                   });
+                }
+
+                if (weShouldRedraw) {
+                  var shouldScroll = false;
+                  // If the user is at the bottom of the page, we should scroll down again if a new message is received.
+                  if (document.documentElement.scrollTop == document.documentElement.scrollTopMax) {
+                    shouldScroll = true;
+                  }
+                  searchResults(document.getElementById('search-bar').value);
+                  if (shouldScroll) {
+                    window.scrollTo({
+                      top: document.body.scrollHeight,
+                      behavior: 'smooth'
+                    });
+                  }
                 }
               }
             }
