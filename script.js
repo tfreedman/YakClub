@@ -266,7 +266,6 @@ function newNoteSubmit(event) {
     e.forEach((el) => {
       tags.push(['e', el.dataset.eventId, el.dataset.relayUrl, el.dataset.marker, el.dataset.pubkey]);
     });
-
     console.log('tags: ' + tags);
     var e = {created_at: Math.floor(Date.now() / 1000), kind: 42, tags: tags, content: data.message.value};
   }
@@ -321,6 +320,12 @@ function uploadNote(data, note, parent) {
       searchResults(document.getElementById('search-bar').value);
     } else if (window.mode == "Trollbox") {
       searchResults(document.getElementById('search-bar').value);
+      if (!isToast)  {
+        window.scrollTo({
+          top: document.body.scrollHeight,
+          behavior: 'smooth'
+        });
+      }
       // drawToasts(document.querySelector('.toasts-container'), window.users, 'messages-'); // TODO
       // TODO: right now when we redraw the page, we replace the new message field with a new one. 
     }
@@ -810,7 +815,18 @@ initSqlJs(config).then(function(SQL){
               if (document.getElementById('search-bar').value == "") { // If yes
                 drawToasts(document.querySelector('.toasts-container'), window.users, "recent");
               } else { // If no.
+                var shouldScroll = false;
+                // If the user is at the bottom of the page, we should scroll down again if a new message is received.
+                if (document.documentElement.scrollTop == document.documentElement.scrollTopMax) {
+                  shouldScroll = true;
+                }
                 searchResults(document.getElementById('search-bar').value);
+                if (shouldScroll) {
+                  window.scrollTo({
+                    top: document.body.scrollHeight,
+                    behavior: 'smooth'
+                  });
+                }
               }
             }
           }
