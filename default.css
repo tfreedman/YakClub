@@ -171,6 +171,11 @@ body {
 
     #new .toast-close-button {display: none}
 
+    #loading {
+      width: 200px;
+      margin: 0 auto;
+    }
+
     & > article:not(:first-child) {
       display: none;
     }

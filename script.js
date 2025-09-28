@@ -996,7 +996,7 @@ initSqlJs(config).then(function(SQL){
               }
 
               if (document.getElementById('search-bar').value == "") { // If yes
-                drawToasts(document.querySelector('.toasts-container'), window.users, "recent");
+                searchResults(document.getElementById('search-bar').value);
               } else { // If no.
                 searchResults(document.getElementById('search-bar').value);
               }
@@ -1526,7 +1526,7 @@ document.querySelectorAll('#topbar nav .right > a').forEach(link => {
     document.querySelectorAll('#container article').forEach(l => {
       l.style.display = 'none';
     });
-    document.querySelectorAll('#container article')[num + 1].style.display = 'block';
+    document.querySelectorAll('#container article')[num + 2].style.display = 'block';
     document.getElementById('search-bar').value = '';
     return false;
   });
