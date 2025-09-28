@@ -1093,14 +1093,6 @@ initSqlJs(config).then(function(SQL){
       var pubkey = window.NostrTools.nip19.decode(mode.substring(8)).data;
       stmt.bind({$pubkey: pubkey})
 
-      if (window.mode == "Toastr") {
-        emptyMsg = "Sorry, there are no toasts from profile " + mode.substring(8) + ' (' + pubkey + ')';
-        pageTitle = 'Toasts from ' + username;
-      } else if (window.mode == "Trollbox") {
-        emptyMsg = "Sorry, there are no channels from profile " + mode.substring(8) + ' (' + pubkey + ')';
-        pageTitle = 'Channels from ' + username;
-      }
-
       shouldShowHeadings = true;
       shouldShowMessages = false;
 
@@ -1111,6 +1103,14 @@ initSqlJs(config).then(function(SQL){
       }
       else {
         username = 'Unknown';
+      }
+
+      if (window.mode == "Toastr") {
+        emptyMsg = "Sorry, there are no toasts from profile " + mode.substring(8) + ' (' + pubkey + ')';
+        pageTitle = 'Toasts from ' + username;
+      } else if (window.mode == "Trollbox") {
+        emptyMsg = "Sorry, there are no channels from profile " + mode.substring(8) + ' (' + pubkey + ')';
+        pageTitle = 'Channels from ' + username;
       }
 
       pageSubTitle = mode.substring(8);
