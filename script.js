@@ -1278,9 +1278,15 @@ initSqlJs(config).then(function(SQL){
         var epochTimestamp = new Date(0);
         epochTimestamp.setUTCSeconds(event.created_at);
 
-        var innerHTML = `<h2><a href="${row.url}">${event.content}</a></h2>
-        <p><a class="messages"></a> &middot; ${epochTimestamp.toLocaleString()} <span class="middot">&middot;</span><br /> <a class="domain"></a> &middot; submitted by <a class="submitter"></a> </p>
-        `
+        if (window.mode == "Toastr") {
+          var innerHTML = `<h2><a href="${row.url}">${event.content}</a></h2>
+          <p><a class="messages"></a> &middot; ${epochTimestamp.toLocaleString()} <span class="middot">&middot;</span><br /> <a class="domain"></a> &middot; submitted by <a class="submitter"></a> </p>
+          `
+        } else if (window.mode == "Trollbox") {
+          var innerHTML = `<h2><a class="title">${event.content}</a></h2>
+          <p><a class="messages"></a> &middot; ${epochTimestamp.toLocaleString()} <span class="middot">&middot;</span><br /> <a class="domain"></a> &middot; submitted by <a class="submitter"></a> </p>
+          `
+        }
         article.innerHTML = innerHTML;
         container.querySelector('.toasts').appendChild(article);
 
@@ -1294,6 +1300,13 @@ initSqlJs(config).then(function(SQL){
         }
         messagesLink.href = '#' + window.NostrTools.nip19.noteEncode(event.id);
         messagesLink.dataset.id = window.NostrTools.nip19.noteEncode(event.id);
+
+        if (window.mode == "Trollbox") {
+          var titleLink = article.querySelector('a.title');
+          titleLink.onclick = messagesLink.onclick;
+          titleLink.href = '#' + window.NostrTools.nip19.noteEncode(event.id);
+          titleLink.dataset.id = window.NostrTools.nip19.noteEncode(event.id);
+        }
 
         var domainLink = article.querySelector('a.domain');
         domainLink.innerHTML = `${row.domain}`
