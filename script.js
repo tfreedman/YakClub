@@ -467,7 +467,7 @@ function displayToast(parent, data, note, params) {
   var innerHTML = `
     <div>
       <div class="content">
-        <div class="created_at" style="${showTime}"><time datetime="${epoch_timestamp}">${(epochTimestamp.getHours() < 10 ? '0' : '') + epochTimestamp.getHours()}:${(epochTimestamp.getMinutes() < 10 ? '0' : '') + epochTimestamp.getMinutes()}</time></div>
+        <div class="created_at" style="${showTime}"><time datetime="${epoch_timestamp}"><div class="tooltip">${epochTimestamp.toUTCString()}</div>${(epochTimestamp.getHours() < 10 ? '0' : '') + epochTimestamp.getHours()}:${(epochTimestamp.getMinutes() < 10 ? '0' : '') + epochTimestamp.getMinutes()}</time></div>
         <div class="caption">`
 
       if (isReply && referencedNote !== undefined) {
