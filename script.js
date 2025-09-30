@@ -4,6 +4,7 @@ window.pool = null;
 window.version = 2;
 window.hasFinishedLoading = false;
 var pubKey;
+var snd = new Audio("/pop.mp3");
 
 var showSearchIcon = true;
 function toggleSearchBox() {
@@ -837,6 +838,9 @@ initSqlJs(config).then(function(SQL){
                   // If the user is at the bottom of the page, we should scroll down again if a new message is received.
                   if (document.documentElement.scrollTop == document.documentElement.scrollTopMax) {
                     shouldScroll = true;
+                  }
+                  if (event.pubkey != pubKey) {
+                    snd.play(); // play sounds, but only if you didn't send the message
                   }
                   searchResults(document.getElementById('search-bar').value);
                   if (shouldScroll) {
