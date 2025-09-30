@@ -1403,7 +1403,7 @@ initSqlJs(config).then(function(SQL){
 
         // Add a button to the empty message that opens the newToast UI
         if (mode.startsWith('url-') || (window.mode == "Trollbox" && mode.startsWith('domain-'))) {
-          var newButton = '<button onclick=\'document.querySelectorAll("#topbar nav .right > a")[0].click()\'>Create</button>'
+          var newButton = '<button class=\'valid\' onclick=\'document.querySelectorAll("#topbar nav .right > a")[0].click()\'>Create</button>'
 
           if (window.mode == "Toastr") {
             document.querySelector('#newToastContainer input[name="url"]').value = mode.substring(4);
@@ -1510,7 +1510,7 @@ innerHTML += `<button type="submit" class="toast-submit-button">${submitText}</b
           <form class="toast-new-form" autocomplete="off" onsubmit="newNoteSubmit(event)" action="">
             <div class="reply-details hidden">
               <div class="tags"></div>
-              <button type="button" onclick="deleteReplyContent(event)">X</button>
+              <button type="button" onclick="deleteReplyContent(event)" class="valid">X</button>
               <p class="heading"></p>
               <p class="username"></p>
               <div class="content"></div>
