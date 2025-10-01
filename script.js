@@ -5,6 +5,7 @@ window.version = 2;
 window.hasFinishedLoading = false;
 var pubKey;
 var snd = new Audio("/pop.mp3");
+window.lastDrawMode = null;
 
 var showSearchIcon = true;
 function toggleSearchBox() {
@@ -209,7 +210,6 @@ function validateToast(event) {
       event.preventDefault();
       if (data.checkValidity()) {
         data.requestSubmit();
-        //document.querySelectorAll('.toast-new-form textarea')[0].focus();
       }
     } else {
       console.log(event);
@@ -286,6 +286,7 @@ function newNoteSubmit(event) {
 }
 
 function uploadNote(data, note, parent) {
+  window.data = data;
   console.log("Sending " + JSON.stringify(note));
   Promise.any(window.pool.publish(relays, note)).then(relay => {
     // When we upload a note, normally we'd have to keep track of state.
@@ -327,8 +328,6 @@ function uploadNote(data, note, parent) {
           behavior: 'smooth'
         });
       }
-      // drawToasts(document.querySelector('.toasts-container'), window.users, 'messages-'); // TODO
-      // TODO: right now when we redraw the page, we replace the new message field with a new one. 
     }
     data.reset();
   });
@@ -654,7 +653,7 @@ initSqlJs(config).then(function(SQL){
       }
 
       console.log('Inserting ' + value['id'] + ' into Notes DB...');
-      db.run("INSERT INTO notes (id, created_at, pubkey, kind, note) VALUES (?, ?, ?, ?, ?)", [value['id'], value['created_at'], value['pubkey'], value['kind'], note]);
+      db.run("INSERT OR IGNORE INTO notes (id, created_at, pubkey, kind, note) VALUES (?, ?, ?, ?, ?)", [value['id'], value['created_at'], value['pubkey'], value['kind'], note]);
       dirty = true;
       console.log('Adding ' + value['id'] + ' to notes');
     } else {
@@ -819,6 +818,7 @@ initSqlJs(config).then(function(SQL){
             if (window.hasFinishedLoading) { // Trigger a redraw if this is after the initial load...
               if (document.getElementById('search-bar').value == "") { // If yes
                 drawToasts(document.querySelector('.toasts-container'), window.users, "recent");
+                window.lastDrawMode = "recent";
               } else { // If no.
 
                 // Only redraw rooms we're actually in if a new message comes in - otherwise, just ignore it.
@@ -905,6 +905,7 @@ initSqlJs(config).then(function(SQL){
     });
     document.querySelector('#trollbox').style.display = 'block';
     drawToasts(document.querySelector('.toasts-container'), window.users, mode);
+    window.lastDrawMode = mode;
   };
 
   var logoLink = document.querySelector('a#logoLink');
@@ -1022,7 +1023,9 @@ initSqlJs(config).then(function(SQL){
     try {
       container.querySelector('.toasts-loading').classList.add("active");
       container.querySelector('.toasts').innerHTML = '';
-      container.querySelector('.toast-new').remove();
+      if (window.lastDrawMode != mode) {
+        container.querySelector('.toast-new').remove();
+      }
       container.querySelector('.toast-new-button').remove();
     } catch (e) {}
 
@@ -1420,7 +1423,7 @@ initSqlJs(config).then(function(SQL){
         container.querySelector('.toasts-empty').innerHTML = '';
         container.querySelector('.toasts-empty').classList.remove("active");
       }
-      if (mode.startsWith('toast-')) {
+      if (mode.startsWith('toast-') && window.lastDrawMode != mode) {
         newNote(container, {eTags: [['e', event.id, '', 'root', event.pubkey]], showButton: true});
       }
 
@@ -1495,13 +1498,7 @@ innerHTML += `<button type="submit" class="toast-submit-button">${submitText}</b
       eTags = params.eTags;
     }
 
-
-    // TODO: Remember if there are actually implementation differences between both products
-    if (window.mode == "Trollbox") {
-      var renderEtags = true;
-    } else if (window.mode == "Toastr") {
-      var renderEtags = true;
-    }
+    var renderEtags = true;
 
     var innerHTML = `
       <div>
