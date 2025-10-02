@@ -212,7 +212,6 @@ function validateToast(event) {
         data.requestSubmit();
       }
     } else {
-      console.log(event);
       // Do nothing
     }
   }
@@ -1262,14 +1261,20 @@ initSqlJs(config).then(function(SQL){
           var ccStmt = db.prepare("SELECT COUNT(*) FROM notes WHERE kind = 42 AND id <> $id AND note LIKE $noteid");
           var pStmt = db.prepare("SELECT COUNT(DISTINCT pubkey) FROM notes WHERE kind = 42 AND id <> $id AND note LIKE $noteid");
           pStmt.bind({$id: event.id, $noteid: '%' + event.id + '%'});
+
+          var isParticipantStmt = db.prepare("SELECT COUNT(*) FROM notes WHERE kind = 42 AND id <> $id AND note LIKE $noteid AND pubkey = $pubkey");
+          isParticipantStmt.bind({$id: event.id, $noteid: '%' + event.id + '%', $pubkey: window.pubKey});
+
+          var isParticipant = false;
+          if (isParticipantStmt.step()) {var isParticipantCount = isParticipantStmt.getAsObject()["COUNT(*)"]}
+          var isParticipant = isParticipantCount > 0;
+
           article.classList += 'toast';
         }
         ccStmt.bind({$id: event.id, $noteid: '%' + event.id + '%'});
 
         if (ccStmt.step()) {var messagesCount = ccStmt.getAsObject()["COUNT(*)"]}
         var messagesString = '';
-
-
 
         if (window.mode == "Toastr") {
           if (messagesCount != 1) {
@@ -1286,7 +1291,6 @@ initSqlJs(config).then(function(SQL){
         }
 
         var participantsString = '';
-
         if (pStmt.step()) {var participantsCount = pStmt.getAsObject()["COUNT(DISTINCT pubkey)"]}
 
         if (participantsCount != 1) {
@@ -1304,7 +1308,7 @@ initSqlJs(config).then(function(SQL){
           `
         } else if (window.mode == "Trollbox") {
           var innerHTML = `<h2><a class="title">${event.content}</a></h2>
-          <p><a class="messages"></a> <span class="middot">&middot;</span> <a class="participants">${participantsCount} ${participantsString}</a></p>
+          <p><a class="messages"></a> <span class="middot">&middot;</span> <a class="participants">${participantsCount} ${participantsString}</a> <span class="middot">&middot;</span> ${isParticipant}</p>
           `
         }
         article.innerHTML = innerHTML;
