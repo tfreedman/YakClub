@@ -1260,12 +1260,15 @@ initSqlJs(config).then(function(SQL){
           article.classList += 'toast';
         } else if (window.mode == "Trollbox") {
           var ccStmt = db.prepare("SELECT COUNT(*) FROM notes WHERE kind = 42 AND id <> $id AND note LIKE $noteid");
+          var pStmt = db.prepare("SELECT COUNT(DISTINCT pubkey) FROM notes WHERE kind = 42 AND id <> $id AND note LIKE $noteid");
+          pStmt.bind({$id: event.id, $noteid: '%' + event.id + '%'});
           article.classList += 'toast';
         }
         ccStmt.bind({$id: event.id, $noteid: '%' + event.id + '%'});
 
         if (ccStmt.step()) {var messagesCount = ccStmt.getAsObject()["COUNT(*)"]}
         var messagesString = '';
+
 
 
         if (window.mode == "Toastr") {
@@ -1282,6 +1285,16 @@ initSqlJs(config).then(function(SQL){
           }
         }
 
+        var participantsString = '';
+
+        if (pStmt.step()) {var participantsCount = pStmt.getAsObject()["COUNT(DISTINCT pubkey)"]}
+
+        if (participantsCount != 1) {
+          participantsString = 'users';
+        } else {
+          participantsString = 'user';
+        }
+
         var epochTimestamp = new Date(0);
         epochTimestamp.setUTCSeconds(event.created_at);
 
@@ -1291,7 +1304,7 @@ initSqlJs(config).then(function(SQL){
           `
         } else if (window.mode == "Trollbox") {
           var innerHTML = `<h2><a class="title">${event.content}</a></h2>
-          <p><a class="messages"></a> &middot; ${epochTimestamp.toLocaleString()} <span class="middot">&middot;</span><br /> <a class="domain"></a> &middot; submitted by <a class="submitter"></a> </p>
+          <p><a class="messages"></a> <span class="middot">&middot;</span> <a class="participants">${participantsCount} ${participantsString}</a></p>
           `
         }
         article.innerHTML = innerHTML;
@@ -1315,29 +1328,31 @@ initSqlJs(config).then(function(SQL){
           titleLink.dataset.id = window.NostrTools.nip19.noteEncode(event.id);
         }
 
-        var domainLink = article.querySelector('a.domain');
-        domainLink.innerHTML = `${row.domain}`
-        domainLink.onclick = function(event) {
-          event.preventDefault();
-          document.getElementById('search-bar').value = event.target.dataset.domain;
-          searchResults(document.getElementById('search-bar').value);
-          history.pushState({hash: event.target.dataset.domain, title: document.title}, '', '#' + event.target.dataset.domain);
-        }
-        domainLink.href = '#' + row.url;
-        domainLink.dataset.domain = row.domain;
-        domainLink.dataset.url = row.url;
+        try { // Toastr only
+          var domainLink = article.querySelector('a.domain');
+          domainLink.innerHTML = `${row.domain}`
+          domainLink.onclick = function(event) {
+            event.preventDefault();
+            document.getElementById('search-bar').value = event.target.dataset.domain;
+            searchResults(document.getElementById('search-bar').value);
+            history.pushState({hash: event.target.dataset.domain, title: document.title}, '', '#' + event.target.dataset.domain);
+          }
+          domainLink.href = '#' + row.url;
+          domainLink.dataset.domain = row.domain;
+          domainLink.dataset.url = row.url;
 
-        var submitterLink = article.querySelector('a.submitter');
-        submitterLink.innerHTML = `${username}`
-        submitterLink.onclick = function(event) {
-          event.preventDefault();
-          document.getElementById('search-bar').value = event.target.dataset.pubkey;
-          searchResults(document.getElementById('search-bar').value);
-          history.pushState({hash: event.target.dataset.pubkey, title: document.title}, '', "#" + event.target.dataset.pubkey);
-        }
+          var submitterLink = article.querySelector('a.submitter');
+          submitterLink.innerHTML = `${username}`
+          submitterLink.onclick = function(event) {
+            event.preventDefault();
+            document.getElementById('search-bar').value = event.target.dataset.pubkey;
+            searchResults(document.getElementById('search-bar').value);
+            history.pushState({hash: event.target.dataset.pubkey, title: document.title}, '', "#" + event.target.dataset.pubkey);
+          }
 
-        submitterLink.href = '#' + window.NostrTools.nip19.npubEncode(event.pubkey);
-        submitterLink.dataset.pubkey = window.NostrTools.nip19.npubEncode(event.pubkey);
+          submitterLink.href = '#' + window.NostrTools.nip19.npubEncode(event.pubkey);
+          submitterLink.dataset.pubkey = window.NostrTools.nip19.npubEncode(event.pubkey);
+        } catch {}
 
       } else {
         // TODO: populate this
