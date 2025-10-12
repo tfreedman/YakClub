@@ -358,7 +358,6 @@ function displayToast(parent, data, note, params) {
     eTags.push(['e', note.id, '', marker, note.pubkey])
   }
 
-
   // When we render a note that happens to be a reply, we embed the context from the referenced note
   // Only the last reply counts - if that note was also a reply, we ignore it.
   if (isReply) {
@@ -1142,13 +1141,24 @@ initSqlJs(config).then(function(SQL){
       }
 
       stmt.bind({$id: id});
-      emptyMsg = "Sorry, there are no toasts corresponding to " + mode.substring(6) + ' (' + id + ')';
 
-      shouldShowHeadings = true;
+      shouldShowHeadings = false;
       shouldShowMessages = true;
 
-      pageTitle = 'Viewing Thread';
+      if (window.mode == "Toastr") {
+        pageTitle = 'Viewing Thread';
+        emptyMsg = "Sorry, there are no toasts corresponding to " + mode.substring(6) + ' (' + id + ')';
+      } else if (window.mode == "Trollbox") {
+        var channelName = 'Unknown';
+        while (stmt.step()) {
+          channelName = JSON.parse(stmt.getAsObject().note)["content"];
+        }
+
+        pageTitle = 'Channel' + ' ' + channelName;
+        emptyMsg = "Sorry, there are no notes corresponding to " + mode.substring(6) + ' (' + id + ')';
+      }
       pageSubTitle = mode.substring(6);
+
     } else if (mode.startsWith("replies-")) {
       shouldShowHeadings = false;
       shouldShowMessages = true;
@@ -1358,7 +1368,9 @@ initSqlJs(config).then(function(SQL){
           submitterLink.dataset.pubkey = window.NostrTools.nip19.npubEncode(event.pubkey);
         } catch {}
 
-      } else {
+      } 
+
+      if (!shouldShowHeadings && !mode.startsWith("toast")) {
         // TODO: populate this
         var isReply = false;
         var reply = {};
@@ -1369,6 +1381,7 @@ initSqlJs(config).then(function(SQL){
 
       if (shouldShowMessages) {
         // Draw replies
+
         const children = document.createElement('div');
         children.classList.add('children');
 
