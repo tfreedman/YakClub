@@ -1408,9 +1408,18 @@ initSqlJs(config).then(function(SQL){
         if (window.mode == "Toastr") {
           newNote(children, {eTags: eTags});
         }
-        drawToasts(document.querySelector('.toasts'), knownUsers, "messages-" + event.id);
+        drawToasts(container.querySelector('.toasts'), knownUsers, "messages-" + event.id);
 
-        if (document.querySelector('.toasts').children.length == 0 && mode.startsWith('toast-')) {
+        console.log('mode:' + container.querySelector('.toasts').children.length);
+
+        var classFilter = '';
+        if (window.mode == "Toastr") {
+          classFilter = '.toast';
+        } else if (window.mode == "Trollbox") {
+          classFilter = '.note';
+        }
+
+        if (!document.querySelector('.toasts ' + classFilter) && mode.startsWith('toast-')) {
           // Add text if there are currently no messages.
           showEmptyMessage = true;
           emptyMsg = 'no messages (yet) - why not be the first to write one?'
