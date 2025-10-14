@@ -256,9 +256,8 @@ function newNoteSubmit(event) {
     // Root Note
     if (window.mode == "Toastr") { // Root toasts exist for specific URLs
       var e = {created_at: Math.floor(Date.now() / 1000), kind: 1, tags: [['r', data.url.value], ['t', 'toastr'], ['subject', data.title.value]], content: data.title.value};
-    } else if (window.mode == "Trollbox") { // Root channels exist for domain names
-      var url = new URL(data.url.value).hostname;
-      var e = {created_at: Math.floor(Date.now() / 1000), kind: 40, tags: [['r', url], ['t', 'trollbox']], content: url};
+    } else if (window.mode == "Trollbox") { // Channels can map to domain names, but there's no validations
+      var e = {created_at: Math.floor(Date.now() / 1000), kind: 40, tags: [['r', data.url.value], ['t', 'trollbox']], content: JSON.stringify({'name': data.url.value})};
     }
   } else if (e[0] && (e[0].dataset.marker == "reply" || e[0].dataset.marker == "root")) {
     // Reply
@@ -589,9 +588,13 @@ initSqlJs(config).then(function(SQL){
     var note = JSON.stringify(value);
 
     var taggedUrl = '';
+    var rValue = '';
     value["tags"].forEach((tag) => {
-      if (tag[0] == "r" && tag[1].toLowerCase().startsWith('http')) {
-        taggedUrl = tag[1];
+      if (tag[0] == "r") {
+        if (tag[1].toLowerCase().startsWith('http')) {
+          taggedUrl = tag[1];
+        }
+        rValue = tag[1];
       }
     });
 
@@ -599,8 +602,10 @@ initSqlJs(config).then(function(SQL){
       const url = new URL(taggedUrl);
       var domain = url.hostname.toLowerCase();
     } else if (window.mode == "Trollbox") {
-      var url = 'test';
-      var domain = 'test';
+      // just use the room name as the raw value
+      // in the future, grab it from the content tag for Trollbox
+      var url = rValue;
+      var domain = rValue;
     }
 
     console.log('Inserting ' + value['id'] + ' into Toasts DB...');
@@ -1151,7 +1156,10 @@ initSqlJs(config).then(function(SQL){
       } else if (window.mode == "Trollbox") {
         var channelName = 'Unknown';
         while (stmt.step()) {
-          channelName = JSON.parse(stmt.getAsObject().note)["content"];
+          try {
+            channelName = JSON.parse(JSON.parse(stmt.getAsObject()["note"])["content"])["name"];
+          } catch (e) { // Ignore it and just use Unknown for now
+          }
         }
 
         pageTitle = 'Channel' + ' ' + channelName;
@@ -1317,7 +1325,14 @@ initSqlJs(config).then(function(SQL){
           <p><a class="messages"></a> &middot; ${epochTimestamp.toLocaleString()} <span class="middot">&middot;</span><br /> <a class="domain"></a> &middot; submitted by <a class="submitter"></a> </p>
           `
         } else if (window.mode == "Trollbox") {
-          var innerHTML = `<h2><a class="title">${event.content}</a></h2>
+          var roomName = 'Unknown';
+
+          try {
+            roomName = JSON.parse(event.content)["name"];
+          } catch (e) {
+            roomName = event.content + ' *';
+          }
+          var innerHTML = `<h2><a class="title">${roomName}</a></h2>
           <p><a class="messages"></a> <span class="middot">&middot;</span> <a class="participants">${participantsCount} ${participantsString}</a> <span class="middot">&middot;</span> ${isParticipant}</p>
           `
         }
