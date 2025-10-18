@@ -157,6 +157,12 @@ function displayProfile(pubKey) {
   }
 }
 
+function getReplyAuthor(elem) {
+  do elem = elem.previousElementSibling;
+  while (!elem.classList.contains("author"));
+  return {username: elem.querySelector(".username").textContent, pubkey: elem.querySelector(".pubkey").textContent, avatar: elem.querySelector(".avatar").innerHTML};
+}
+
 function updateProfile() {
   var content = {};
   var container = document.querySelector('#profile');
@@ -535,7 +541,12 @@ function displayToast(parent, data, note, params) {
     } else if (window.mode == "Trollbox") {
       var form = document.querySelector('.toast-new-form');
       form.querySelector('.reply-details .heading').innerHTML = 'Replying to...';
-      //TODO: FIXME form.querySelector('.reply-details .username').innerHTML = this.parentElement.parentElement.querySelector('.content header .username').innerHTML;
+
+      var replyAuthor = getReplyAuthor(this.parentElement.parentElement.parentElement.parentElement);
+      form.querySelector('.reply-details .username').innerHTML = replyAuthor.username;
+      form.querySelector('.reply-details .pubkey').innerHTML = replyAuthor.pubkey;
+      form.querySelector('.reply-details .avatar').innerHTML = replyAuthor.avatar;
+
       form.querySelector('.reply-details .content').innerHTML = this.parentElement.parentElement.querySelector('.content .caption').innerHTML;
       form.querySelector('.reply-details .tags').innerHTML = this.parentElement.parentElement.querySelector('.content .tags').innerHTML;
       form.querySelector('.reply-details').classList.remove('hidden');
@@ -1567,6 +1578,8 @@ innerHTML += `<button type="submit" class="toast-submit-button">${submitText}</b
                 <button type="button" onclick="deleteReplyContent(event)" class="valid reply-cancel">×</button>
                 <p class="heading"></p>
                 <p class="username"></p>
+                <div class="avatar"></div>
+                <p class="pubkey"></p>
                 <div class="content"></div>
               </div>
 
