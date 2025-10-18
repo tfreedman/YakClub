@@ -540,7 +540,7 @@ function displayToast(parent, data, note, params) {
       var form = this.parentElement.parentElement.parentElement.nextSibling.querySelector('& > .toast-new');
     } else if (window.mode == "Trollbox") {
       var form = document.querySelector('.toast-new-form');
-      form.querySelector('.reply-details .heading').innerHTML = 'Replying to...';
+      form.querySelector('.reply-details .heading').innerHTML = 'Replying to:';
 
       var replyAuthor = getReplyAuthor(this.parentElement.parentElement.parentElement.parentElement);
       form.querySelector('.reply-details .username').innerHTML = replyAuthor.username;
@@ -1576,11 +1576,14 @@ innerHTML += `<button type="submit" class="toast-submit-button">${submitText}</b
               <div class="reply-details hidden">
                 <div class="tags"></div>
                 <button type="button" onclick="deleteReplyContent(event)" class="valid reply-cancel">×</button>
+
                 <p class="heading"></p>
-                <p class="username"></p>
-                <div class="avatar"></div>
-                <p class="pubkey"></p>
-                <div class="content"></div>
+                <div class="context">
+                  <div class="avatar"></div>
+                  <span class="username"></span> <span class="pubkey"></span>
+                  <br />
+                  <div class="content"></div>
+                </div>
               </div>
 
               <input type="hidden" name="url" value="${url}" placeholder="URL" />
