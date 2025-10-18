@@ -1561,24 +1561,26 @@ innerHTML += `<button type="submit" class="toast-submit-button">${submitText}</b
         <img class="avatar" src="${avatarURL}" />
         <div class="content">
           <form class="toast-new-form" autocomplete="off" onsubmit="newNoteSubmit(event)" action="">
-            <div class="reply-details hidden">
-              <div class="tags"></div>
-              <button type="button" onclick="deleteReplyContent(event)" class="valid">X</button>
-              <p class="heading"></p>
-              <p class="username"></p>
-              <div class="content"></div>
+            <div class="middle">
+              <div class="reply-details hidden">
+                <div class="tags"></div>
+                <button type="button" onclick="deleteReplyContent(event)" class="valid reply-cancel">×</button>
+                <p class="heading"></p>
+                <p class="username"></p>
+                <div class="content"></div>
+              </div>
+
+              <input type="hidden" name="url" value="${url}" placeholder="URL" />
+            `
+              renderEtags && eTags.forEach(function (tag, index) {
+                innerHTML += `
+              <input type="hidden" name="e" data-event-id="${tag[1]}" data-relay-url="${tag[2]}" data-marker="${tag[3]}" data-pubkey="${tag[4]}" />
+            `
+              })
+
+           innerHTML += `
+              <textarea type="text" name="message" placeholder="Send a message..." required minlength="1" onkeydown="validateToast(event)"></textarea>
             </div>
-
-            <input type="hidden" name="url" value="${url}" placeholder="URL" />
-          `
-            renderEtags && eTags.forEach(function (tag, index) {
-              innerHTML += `
-            <input type="hidden" name="e" data-event-id="${tag[1]}" data-relay-url="${tag[2]}" data-marker="${tag[3]}" data-pubkey="${tag[4]}" />
-          `
-            })
-
-         innerHTML += `
-            <textarea type="text" name="message" placeholder="Send a message..." required minlength="1" onkeydown="validateToast(event)"></textarea>
             <button type="submit" class="toast-submit-button">Reply</button>
           </form>
         </div>
