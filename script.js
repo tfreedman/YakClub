@@ -497,7 +497,8 @@ function displayToast(parent, data, note, params) {
             <div class="avatar">
               <img src="${replyAvatarURL}" class="${imageClass}"/>
             </div>
-            <span class="username">${replyUsername}</span> <span class="pubkey">(${window.NostrTools.nip19.npubEncode(referencedNote.pubkey)})</span><br />${referencedNote.content.replace(/\n/g, '<br />')}
+            <span class="username">${replyUsername}</span> <span class="pubkey">(${window.NostrTools.nip19.npubEncode(referencedNote.pubkey)})</span>
+            <br /><a class="reply-context">${referencedNote.content.replace(/\n/g, '<br />')}</a>
           </div>`
       }
 
@@ -526,9 +527,6 @@ function displayToast(parent, data, note, params) {
     );
 
     div.classList.add('highlight');
-
-    //document.getElementById('search-bar').value = hash;
-    //console.log(hash);
   }
 
   const reply = document.createElement('a');
@@ -569,6 +567,13 @@ function displayToast(parent, data, note, params) {
   div.querySelector('footer').prepend(link)
   div.querySelector('footer').prepend(reply)
   div.querySelector('footer').prepend(permalink)
+
+  if (isReply && referencedNote !== undefined) {
+    const replyContext = div.querySelector('.reply-context');
+    replyContext.onclick = function(event) {
+      document.querySelector('#' + window.NostrTools.nip19.noteEncode(root) + '-' + window.NostrTools.nip19.noteEncode(referencedNote.id)).scrollIntoView();
+    }
+  }
 
   if (date !== null) {
     parent.appendChild(date);
