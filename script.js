@@ -1072,9 +1072,9 @@ initSqlJs(config).then(function(SQL){
         pageSubTitle = 'Domain: ' + mode.substring(7);
       } else if (window.mode == "Trollbox") {
         stmt = db.prepare("SELECT * FROM toasts WHERE kind = 40 AND domain = $domain ORDER BY created_at DESC");
-        emptyMsg = "Sorry, there are no channels for the domain " + mode.substring(7);
+        emptyMsg = "Sorry, there are no channels named " + mode.substring(7);
         pageTitle = 'Search Results'
-        pageSubTitle = 'Domain: ' + mode.substring(7);
+        pageSubTitle = 'Room name: ' + mode.substring(7);
       }
 
       stmt.bind({$domain: mode.substring(7)});
@@ -1531,7 +1531,7 @@ initSqlJs(config).then(function(SQL){
             <input type="url" name="url" value="" placeholder="URL" required onkeydown="validateToast(event)"></input>
             <input type="text" name="title" placeholder="Write a title..." required onkeydown="validateToast(event)"></input>
           `} else if (window.mode == "Trollbox") { innerHTML += `
-            <input type="text" name="url" value="" placeholder="Domain name or URL" required onkeydown="validateToast(event)"></input>
+            <input type="text" name="url" value="" placeholder="Room or domain name" required onkeydown="validateToast(event)"></input>
           `}
 
 innerHTML += `<button type="submit" class="toast-submit-button">${submitText}</button>
