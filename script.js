@@ -206,8 +206,12 @@ function uploadProfileEvent(note) {
   });
 }
 
-function validateToast(event) {
-  var data = event.target.parentElement;
+function validateToast(event, depth) {
+  if (depth == 1) {
+    var data = event.target.parentElement;
+  } else {
+    var data = event.target.parentElement.parentElement;
+  }
 
   if (window.mode == "Toastr") {
     //Do nothing
@@ -1533,10 +1537,10 @@ initSqlJs(config).then(function(SQL){
           <form class="toast-new-form" autocomplete="off" onsubmit="newNoteSubmit(event)" action="">`
 
           if (window.mode == "Toastr") { innerHTML += `
-            <input type="url" name="url" value="" placeholder="URL" required onkeydown="validateToast(event)"></input>
-            <input type="text" name="title" placeholder="Write a title..." required onkeydown="validateToast(event)"></input>
+            <input type="url" name="url" value="" placeholder="URL" required onkeydown="validateToast(event, 1)"></input>
+            <input type="text" name="title" placeholder="Write a title..." required onkeydown="validateToast(event, 1)"></input>
           `} else if (window.mode == "Trollbox") { innerHTML += `
-            <input type="text" name="url" value="" placeholder="Room or domain name" required onkeydown="validateToast(event)"></input>
+            <input type="text" name="url" value="" placeholder="Room or domain name" required onkeydown="validateToast(event, 1)"></input>
           `}
 
 innerHTML += `<button type="submit" class="toast-submit-button">${submitText}</button>
@@ -1600,7 +1604,7 @@ innerHTML += `<button type="submit" class="toast-submit-button">${submitText}</b
               })
 
            innerHTML += `
-              <textarea type="text" name="message" placeholder="Send a message..." required minlength="1" onkeydown="validateToast(event)"></textarea>
+              <textarea type="text" name="message" placeholder="Send a message..." required minlength="1" onkeydown="validateToast(event, 2)"></textarea>
             </div>
             <button type="submit" class="toast-submit-button">Reply</button>
           </form>
