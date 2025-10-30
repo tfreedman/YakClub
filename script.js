@@ -623,12 +623,11 @@ initSqlJs(config).then(function(SQL){
       var domain = url.hostname.toLowerCase();
     } else if (window.mode == "Trollbox") {
       // just use the room name as the raw value
-      // in the future, grab it from the content tag for Trollbox
-      var url = rValue;
-      var domain = rValue;
+      var url = rValue // is this actually used anywhere?;
+      var domain = JSON.parse(value["content"])["name"].toLowerCase();
     }
 
-    console.log('Inserting ' + value['id'] + ' into Toasts DB...');
+    console.log('Inserting ' + value['id'] + ' - (' + domain + ') into Toasts DB...');
     db.run("INSERT OR IGNORE INTO toasts (id, created_at, domain, url, pubkey, kind, note) VALUES (?, ?, ?, ?, ?, ?, ?)", [value['id'], value['created_at'], domain, taggedUrl, value['pubkey'], value['kind'], note]);
 
     if (immediateWrite) {
@@ -1086,7 +1085,7 @@ initSqlJs(config).then(function(SQL){
         pageSubTitle = 'Room name: ' + mode.substring(7);
       }
 
-      stmt.bind({$domain: mode.substring(7)});
+      stmt.bind({$domain: mode.substring(7).toLowerCase()});
 
       shouldShowHeadings = true;
       shouldShowMessages = false;
