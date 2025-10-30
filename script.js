@@ -1079,13 +1079,15 @@ initSqlJs(config).then(function(SQL){
         pageTitle = 'Search Results'
         pageSubTitle = 'Domain: ' + mode.substring(7);
       } else if (window.mode == "Trollbox") {
-        stmt = db.prepare("SELECT * FROM toasts WHERE kind = 40 AND domain = $domain ORDER BY created_at DESC");
+        stmt = db.prepare("SELECT * FROM toasts WHERE kind = 40 AND domain LIKE $domain ORDER BY created_at DESC");
         emptyMsg = "Sorry, there are no channels named " + mode.substring(7);
+        var closeMatchMsg = "Sorry, there are no channels named " + mode.substring(7);
         pageTitle = 'Search Results'
         pageSubTitle = 'Room name: ' + mode.substring(7);
+        var isExactMatch = false;
       }
 
-      stmt.bind({$domain: mode.substring(7).toLowerCase()});
+      stmt.bind({$domain: '%' + mode.substring(7).toLowerCase() + '%'});
 
       shouldShowHeadings = true;
       shouldShowMessages = false;
@@ -1277,6 +1279,10 @@ initSqlJs(config).then(function(SQL){
         }
       }
 
+      if (window.mode == "Trollbox" && mode.startsWith('domain') && !isExactMatch) {
+        isExactMatch = JSON.parse(event["content"])["name"].toLowerCase() == mode.substring(7).toLowerCase();
+      }
+
       var username = 'Unknown';
       var avatarURL = null;
       if (users[event.pubkey]) {
@@ -1401,8 +1407,7 @@ initSqlJs(config).then(function(SQL){
           submitterLink.href = '#' + window.NostrTools.nip19.npubEncode(event.pubkey);
           submitterLink.dataset.pubkey = window.NostrTools.nip19.npubEncode(event.pubkey);
         } catch {}
-
-      } 
+      }
 
       if (!shouldShowHeadings && !mode.startsWith("toast")) {
         // TODO: populate this
@@ -1476,7 +1481,7 @@ initSqlJs(config).then(function(SQL){
 
     try {
       container.querySelector('.toasts-loading').classList.remove("active");
-      if (showEmptyMessage) {
+      if (showEmptyMessage || (window.mode == "Trollbox" && mode.startsWith('domain-') && !isExactMatch)) {
         container.querySelector('.toasts-empty').innerHTML = emptyMsg;
 
         // Add a button to the empty message that opens the newToast UI
