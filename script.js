@@ -1484,8 +1484,12 @@ initSqlJs(config).then(function(SQL){
       if (showEmptyMessage || (window.mode == "Trollbox" && mode.startsWith('domain-') && !isExactMatch)) {
         var actionMsg = 'Create';
         // If a room similar to the one we were looking for exists, display the 'close match' message
+        // typeof closeMatchMsg !== 'undefined' is basically equivalent to (window.mode == "Trollbox" && mode.startsWith('domain-'))
         if (typeof closeMatchMsg !== 'undefined' && !showEmptyMessage && !isExactMatch) {
           container.querySelector('.toasts-empty').innerHTML = closeMatchMsg;
+          actionMsg = 'Create channel ' + mode.substring(7);
+        } else if (typeof closeMatchMsg !== 'undefined' && showEmptyMessage) {
+          container.querySelector('.toasts-empty').innerHTML = emptyMsg;
           actionMsg = 'Create channel ' + mode.substring(7);
         } else {
           container.querySelector('.toasts-empty').innerHTML = emptyMsg;
