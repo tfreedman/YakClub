@@ -1081,7 +1081,7 @@ initSqlJs(config).then(function(SQL){
       } else if (window.mode == "Trollbox") {
         stmt = db.prepare("SELECT * FROM toasts WHERE kind = 40 AND domain LIKE $domain ORDER BY created_at DESC");
         emptyMsg = "Sorry, there are no channels named " + mode.substring(7);
-        var closeMatchMsg = "Sorry, there are no channels named " + mode.substring(7);
+        var closeMatchMsg = "Not what you're looking for?";
         pageTitle = 'Search Results'
         pageSubTitle = 'Room name: ' + mode.substring(7);
         var isExactMatch = false;
@@ -1482,11 +1482,18 @@ initSqlJs(config).then(function(SQL){
     try {
       container.querySelector('.toasts-loading').classList.remove("active");
       if (showEmptyMessage || (window.mode == "Trollbox" && mode.startsWith('domain-') && !isExactMatch)) {
-        container.querySelector('.toasts-empty').innerHTML = emptyMsg;
+        var actionMsg = 'Create';
+        // If a room similar to the one we were looking for exists, display the 'close match' message
+        if (typeof closeMatchMsg !== 'undefined' && !showEmptyMessage && !isExactMatch) {
+          container.querySelector('.toasts-empty').innerHTML = closeMatchMsg;
+          actionMsg = 'Create channel ' + mode.substring(7);
+        } else {
+          container.querySelector('.toasts-empty').innerHTML = emptyMsg;
+        }
 
         // Add a button to the empty message that opens the newToast UI
         if (mode.startsWith('url-') || (window.mode == "Trollbox" && mode.startsWith('domain-'))) {
-          var newButton = '<button class=\'valid\' onclick=\'document.querySelectorAll("#topbar nav .right > a")[0].click()\'>Create</button>'
+          var newButton = '<button class=\'valid\' onclick=\'document.querySelectorAll("#topbar nav .right > a")[0].click()\'>' + actionMsg + '</button>'
 
           if (window.mode == "Toastr") {
             document.querySelector('#newToastContainer input[name="url"]').value = mode.substring(4);
