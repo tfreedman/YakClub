@@ -1497,15 +1497,17 @@ initSqlJs(config).then(function(SQL){
 
         // Add a button to the empty message that opens the newToast UI
         if (mode.startsWith('url-') || (window.mode == "Trollbox" && mode.startsWith('domain-'))) {
-          var newButton = '<button class=\'valid\' onclick=\'document.querySelectorAll("#topbar nav .right > a")[0].click()\'>' + actionMsg + '</button>'
-
           if (window.mode == "Toastr") {
+            var newButton = '<button class=\'valid\' onclick=\'document.querySelectorAll("#topbar nav .right > a")[0].click()\'>' + actionMsg + '</button>';
             document.querySelector('#newToastContainer input[name="url"]').value = mode.substring(4);
           } else if (window.mode == "Trollbox") {
-            document.querySelector('#newToastContainer input[name="url"]').value = mode.substring(7);
+            var newChannelForm = `<form class="toast-new-form" autocomplete="off" onsubmit="newNoteSubmit(event)" action="">
+              <input type="hidden" name="url" value="${mode.substring(7)}" placeholder="Room or domain name" required="" onkeydown="validateToast(event, 1)">
+              <button type="submit" class="toast-submit-button">${actionMsg}</button>
+            </form>`;
           }
 
-          container.querySelector('.toasts-empty').innerHTML += '<br />' + newButton;
+          container.querySelector('.toasts-empty').innerHTML += '<br />' + newChannelForm;
         }
 
 
