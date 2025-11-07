@@ -674,8 +674,22 @@ initSqlJs(config).then(function(SQL){
         return
       }
 
+      var parent = '';
+      // The time a room was created is mostly irrelevant - we need the time the last message in the room was received.
+      // Every time we get a chat message, figure out what room it belongs to, and update that room's timestamp
+
+      value["tags"].forEach((tag) => {
+        if (tag[0] == "e" && tag[3] == "root") {
+          parent = tag[1];
+        }
+      });
+
       console.log('Inserting ' + value['id'] + ' into Notes DB...');
       db.run("INSERT OR IGNORE INTO notes (id, created_at, pubkey, kind, note) VALUES (?, ?, ?, ?, ?)", [value['id'], value['created_at'], value['pubkey'], value['kind'], note]);
+
+      // Update the room's timestamp on each message received
+      db.run("UPDATE toasts SET created_at = MAX(created_at, ?) WHERE id = ?", [value['created_at'], parent]);
+
       dirty = true;
       console.log('Adding ' + value['id'] + ' to notes');
     } else {
@@ -1313,6 +1327,10 @@ initSqlJs(config).then(function(SQL){
           var isParticipant = isParticipantCount > 0;
 
           article.classList += 'toast';
+
+          // var lastUpdatedTimestamp = new Date(0);
+          // lastUpdatedTimestamp.setUTCSeconds(event.created_at);
+          // <span class="middot">&middot;</span> ${lastUpdatedTimestamp}
         }
         ccStmt.bind({$id: event.id, $noteid: '%' + event.id + '%'});
 
@@ -1358,7 +1376,7 @@ initSqlJs(config).then(function(SQL){
             roomName = event.content + ' *';
           }
           var innerHTML = `<h2><a class="title">${roomName}</a></h2>
-          <p><a class="messages"></a> <span class="middot">&middot;</span> <a class="participants">${participantsCount} ${participantsString}</a> <span class="middot">&middot;</span> ${isParticipant}</p>
+          <p><a class="messages"></a> <span class="middot">&middot;</span> <span class="participants">${participantsCount} ${participantsString}</span> <span class="middot">&middot;</span> ${isParticipant}</p>
           `
         }
         article.innerHTML = innerHTML;
