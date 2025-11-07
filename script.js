@@ -30,6 +30,20 @@ config = {
   locateFile: filename => `${filename}`
 }
 
+function filterToasts(event) {
+  event.preventDefault();
+  console.log(event.target.dataset.filter);
+
+  var filter = event.target.dataset.filter;
+  document.querySelectorAll('.toasts .toast').forEach(l => {
+    if (l.classList.contains(filter) || filter == 'all') {
+      l.classList.remove("hidden");
+    } else {
+      l.classList.add("hidden");
+    }
+  });
+}
+
 function setExtensionIcon(tab, currentURL) {
   const u = new URL(currentURL);
   var domain = u.hostname.toLowerCase();
@@ -560,7 +574,7 @@ function displayToast(parent, data, note, params) {
   }
 
   const link = document.createElement('a');
-  link.classList += 'raw';
+  link.classList.add('raw');
   link.onclick = function(event) {
     event.preventDefault();
     console.log(note);
@@ -1083,6 +1097,7 @@ initSqlJs(config).then(function(SQL){
     var shouldShowHeadings = false;
     var shouldShowMessages = false;
     var showEmptyMessage = true;
+    var showFilters = false;
 
     if (mode.startsWith("domain-")) {
       console.log("Filtering to domain name " + mode.substring(7));
@@ -1114,9 +1129,10 @@ initSqlJs(config).then(function(SQL){
         pageSubTitle = '';
       } else if (window.mode == "Trollbox") {
         stmt = db.prepare("SELECT * FROM toasts WHERE kind = 40 ORDER BY created_at DESC");
-        emptyMsg = "Sorry, there are no recent channels";
-        pageTitle = 'Recent Channels'
+        emptyMsg = "Sorry, there are no channels";
+        pageTitle = 'Channels'
         pageSubTitle = '';
+        showFilters = true;
       }
 
       shouldShowHeadings = true;
@@ -1249,6 +1265,13 @@ initSqlJs(config).then(function(SQL){
     var lastPubkey = null;
     var lastTimestamp = null;
 
+    if (showFilters) {
+      var article = document.createElement('div');
+      var innerHTML = `<p class="filters"><a href="#" onclick="filterToasts(event)" data-filter="all">all</a> <span class="middot">&middot;</span> <a href="#" onclick="filterToasts(event)" data-filter="participant">participated</a> <span class="middot">&middot;</span> <a href="#" onclick="filterToasts(event)" data-filter="creator">created</a></p>`
+      article.innerHTML = innerHTML;
+      container.querySelector('.toasts').appendChild(article);
+    }
+
     while(true) {
       if (stmt.step()) {
         row = stmt.getAsObject();
@@ -1308,12 +1331,13 @@ initSqlJs(config).then(function(SQL){
           username = user.name;
         }
       }
+
       if (shouldShowHeadings) {
         var article = document.createElement('div');
 
         if (window.mode == "Toastr") {
           var ccStmt = db.prepare("SELECT COUNT(*) FROM notes WHERE kind = 1 AND id <> $id AND note LIKE $noteid");
-          article.classList += 'toast';
+          article.classList.add('toast');
         } else if (window.mode == "Trollbox") {
           var ccStmt = db.prepare("SELECT COUNT(*) FROM notes WHERE kind = 42 AND id <> $id AND note LIKE $noteid");
           var pStmt = db.prepare("SELECT COUNT(DISTINCT pubkey) FROM notes WHERE kind = 42 AND id <> $id AND note LIKE $noteid");
@@ -1326,7 +1350,17 @@ initSqlJs(config).then(function(SQL){
           if (isParticipantStmt.step()) {var isParticipantCount = isParticipantStmt.getAsObject()["COUNT(*)"]}
           var isParticipant = isParticipantCount > 0;
 
-          article.classList += 'toast';
+          article.classList.add('toast');
+
+          if (isParticipant) {
+            article.classList.add('participant');
+          }
+
+          var isCreator = (event.pubkey == window.pubKey);
+
+          if (isCreator) {
+            article.classList.add('creator');
+          }
 
           // var lastUpdatedTimestamp = new Date(0);
           // lastUpdatedTimestamp.setUTCSeconds(event.created_at);
@@ -1376,7 +1410,7 @@ initSqlJs(config).then(function(SQL){
             roomName = event.content + ' *';
           }
           var innerHTML = `<h2><a class="title">${roomName}</a></h2>
-          <p><a class="messages"></a> <span class="middot">&middot;</span> <span class="participants">${participantsCount} ${participantsString}</span> <span class="middot">&middot;</span> ${isParticipant}</p>
+          <p><a class="messages"></a> <span class="middot">&middot;</span> <span class="participants">${participantsCount} ${participantsString}</span></p>
           `
         }
         article.innerHTML = innerHTML;
