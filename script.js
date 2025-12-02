@@ -1,4 +1,4 @@
-window.mode = "Trollbox";
+window.mode = "YakClub";
 var users = {};
 window.pool = null;
 window.version = 2;
@@ -229,7 +229,7 @@ function validateToast(event, depth) {
 
   if (window.mode == "Toastr") {
     //Do nothing
-  } else if (window.mode == "Trollbox") {
+  } else if (window.mode == "YakClub") {
     if (event.key === "Enter" && !event.shiftKey) {
       event.preventDefault();
       if (data.checkValidity()) {
@@ -280,8 +280,8 @@ function newNoteSubmit(event) {
     // Root Note
     if (window.mode == "Toastr") { // Root toasts exist for specific URLs
       var e = {created_at: Math.floor(Date.now() / 1000), kind: 1, tags: [['r', data.url.value], ['t', 'toastr'], ['subject', data.title.value]], content: data.title.value};
-    } else if (window.mode == "Trollbox") { // Channels can map to domain names, but there's no validations
-      var e = {created_at: Math.floor(Date.now() / 1000), kind: 40, tags: [['r', data.url.value], ['t', 'trollbox']], content: JSON.stringify({'name': data.url.value})};
+    } else if (window.mode == "YakClub") { // Channels can map to domain names, but there's no validations
+      var e = {created_at: Math.floor(Date.now() / 1000), kind: 40, tags: [['r', data.url.value], ['t', 'yakclub']], content: JSON.stringify({'name': data.url.value})};
     }
   } else if (e[0] && (e[0].dataset.marker == "reply" || e[0].dataset.marker == "root")) {
     // Reply
@@ -322,10 +322,10 @@ function uploadNote(data, note, parent) {
           isToast = true;
         }
       });
-    } else if (window.mode == "Trollbox") {
+    } else if (window.mode == "YakClub") {
       if (note["kind"] == 40) {
         note["tags"].forEach((tag) => {
-          if (tag[0] == "t" && tag[1].toLowerCase().startsWith('trollbox')) {
+          if (tag[0] == "t" && (tag[1].toLowerCase().startsWith('trollbox') || tag[1].toLowerCase().startsWith('yakclub'))) {
             isToast = true;
           }
         });
@@ -342,7 +342,7 @@ function uploadNote(data, note, parent) {
 
     if (window.mode == "Toastr") {
       searchResults(document.getElementById('search-bar').value);
-    } else if (window.mode == "Trollbox") {
+    } else if (window.mode == "YakClub") {
       searchResults(document.getElementById('search-bar').value);
       if (!isToast)  {
         window.scrollTo({
@@ -554,7 +554,7 @@ function displayToast(parent, data, note, params) {
     window.foo = this;
     if (window.mode == "Toastr") {
       var form = this.parentElement.parentElement.parentElement.nextSibling.querySelector('& > .toast-new');
-    } else if (window.mode == "Trollbox") {
+    } else if (window.mode == "YakClub") {
       var form = document.querySelector('.toast-new-form');
       form.querySelector('.reply-details .heading').innerHTML = 'Replying to:';
 
@@ -635,7 +635,7 @@ initSqlJs(config).then(function(SQL){
     if (window.mode == "Toastr") {
       const url = new URL(taggedUrl);
       var domain = url.hostname.toLowerCase();
-    } else if (window.mode == "Trollbox") {
+    } else if (window.mode == "YakClub") {
       // just use the room name as the raw value
       var url = rValue // is this actually used anywhere?;
       var domain = JSON.parse(value["content"])["name"].toLowerCase();
@@ -646,7 +646,7 @@ initSqlJs(config).then(function(SQL){
 
     if (immediateWrite) {
       var dbstr = toBinString(window.db.export());
-      window.localStorage.setItem("trollbox.sqlite", dbstr);
+      window.localStorage.setItem("yakclub.sqlite", dbstr);
     }
   }
 
@@ -711,12 +711,12 @@ initSqlJs(config).then(function(SQL){
     }
     if (dirty && immediateWrite) {
       var dbstr = toBinString(window.db.export());
-      window.localStorage.setItem("trollbox.sqlite", dbstr);
+      window.localStorage.setItem("yakclub.sqlite", dbstr);
     }
   }
 
   var dbVersion = window.localStorage.getItem("version");
-  var dbstr = window.localStorage.getItem("trollbox.sqlite");
+  var dbstr = window.localStorage.getItem("yakclub.sqlite");
 
   if (dbstr && dbVersion !== null && dbVersion == window.version) {
     console.log("Loading existing database - version numbers match");
@@ -730,7 +730,7 @@ initSqlJs(config).then(function(SQL){
   }
 
   var dbstr = toBinString(db.export());
-  window.localStorage.setItem("trollbox.sqlite", dbstr);
+  window.localStorage.setItem("yakclub.sqlite", dbstr);
   window.localStorage.setItem("version", window.version);
   window.db = db;
 
@@ -809,9 +809,9 @@ initSqlJs(config).then(function(SQL){
   if (window.mode == "Toastr") {
     kind = 1;
     filter = {kinds: [kind], '#t': ["toastr"], since: 1750046400};
-  } else if (window.mode == "Trollbox") {
+  } else if (window.mode == "YakClub") {
     kind = 40;
-    filter = {kinds: [kind], '#t': ["trollbox"], since: 1750046400}
+    filter = {kinds: [kind], '#t': ["trollbox", "yakclub"], since: 1750046400}
   }
 
   var h = window.pool.subscribeMany(
@@ -828,7 +828,7 @@ initSqlJs(config).then(function(SQL){
       oneose() {
         if (dirty) {
           var dbstr = toBinString(window.db.export());
-          window.localStorage.setItem("trollbox.sqlite", dbstr);
+          window.localStorage.setItem("yakclub.sqlite", dbstr);
         }
         fetchNotes();
         //h.close();
@@ -842,7 +842,7 @@ initSqlJs(config).then(function(SQL){
     if (window.mode == "Toastr") {
       var stmt = window.db.prepare("SELECT * FROM toasts WHERE kind = 1");
       kind = 1; // children of toasts are also kind 1
-    } else if (window.mode == "Trollbox") {
+    } else if (window.mode == "YakClub") {
       var stmt = window.db.prepare("SELECT * FROM toasts WHERE kind = 40");
       kind = 42; // children of channel messages are actually kind 42
     }
@@ -851,7 +851,7 @@ initSqlJs(config).then(function(SQL){
       var event = JSON.parse(row.note);
       if (window.mode == "Toastr") {
         filters.push({kinds: [1], '#e': [event.id]});
-      } else if (window.mode == "Trollbox") {
+      } else if (window.mode == "YakClub") {
         filters.push({kinds: [42], '#e': [event.id]});
       }
     }
@@ -922,8 +922,8 @@ initSqlJs(config).then(function(SQL){
     } else if ((searchValue.startsWith('https://') || searchValue.startsWith('http://')) && (searchValue.split("/").length - 1) > 2) {
       if (window.mode == "Toastr") {
         mode = 'url-' + searchValue;
-      } else if (window.mode == "Trollbox") {
-        // Trollbox only supports one chat room per domain, so URL-mode isn't a thing
+      } else if (window.mode == "YakClub") {
+        // Yak Club only supports one chat room per domain, so URL-mode isn't a thing
         if (searchValue.startsWith('https://')) {
           searchValue = searchValue.substring(8, searchValue.length);
         } else if (searchValue.startsWith('http://')) {
@@ -953,7 +953,7 @@ initSqlJs(config).then(function(SQL){
     document.querySelectorAll('#container article').forEach(l => {
       l.style.display = 'none';
     });
-    document.querySelector('#trollbox').style.display = 'block';
+    document.querySelector('#yak').style.display = 'block';
     drawToasts(document.querySelector('.toasts-container'), window.users, mode);
     window.lastDrawMode = mode;
   };
@@ -999,7 +999,7 @@ initSqlJs(config).then(function(SQL){
     // Get the public keys of everyone who's written a toast
     if (window.mode == "Toastr") {
       var stmt = db.prepare("SELECT * FROM toasts WHERE kind = 1");
-    } else if (window.mode == "Trollbox") {
+    } else if (window.mode == "YakClub") {
       var stmt = db.prepare("SELECT * FROM toasts WHERE kind = 40");
     }
 
@@ -1012,7 +1012,7 @@ initSqlJs(config).then(function(SQL){
     // Get the public keys of everyone who's written a note
     if (window.mode == "Toastr") {
       var stmt = db.prepare("SELECT * FROM notes WHERE kind = 1");
-    } else if (window.mode == "Trollbox") {
+    } else if (window.mode == "YakClub") {
       var stmt = db.prepare("SELECT * FROM notes WHERE kind = 42");
     }
     while(stmt.step()) {
@@ -1040,7 +1040,7 @@ initSqlJs(config).then(function(SQL){
         oneose() {
           if (dirty) {
             var dbstr = toBinString(window.db.export());
-            window.localStorage.setItem("trollbox.sqlite", dbstr);
+            window.localStorage.setItem("yakclub.sqlite", dbstr);
           }
           if (!window.hasFinishedLoading) {
             if (!window.browserExtension) {
@@ -1107,7 +1107,7 @@ initSqlJs(config).then(function(SQL){
         emptyMsg = "Sorry, there are no toasts for the domain " + mode.substring(7);
         pageTitle = 'Search Results'
         pageSubTitle = 'Domain: ' + mode.substring(7);
-      } else if (window.mode == "Trollbox") {
+      } else if (window.mode == "YakClub") {
         stmt = db.prepare("SELECT * FROM toasts WHERE kind = 40 AND domain LIKE $domain ORDER BY created_at DESC");
         emptyMsg = "Sorry, there are no channels named " + mode.substring(7);
         var closeMatchMsg = "Not what you're looking for?";
@@ -1127,7 +1127,7 @@ initSqlJs(config).then(function(SQL){
         emptyMsg = "Sorry, there are no recent toasts";
         pageTitle = 'Recent Toasts'
         pageSubTitle = '';
-      } else if (window.mode == "Trollbox") {
+      } else if (window.mode == "YakClub") {
         stmt = db.prepare("SELECT * FROM toasts WHERE kind = 40 ORDER BY created_at DESC");
         emptyMsg = "Sorry, there are no channels";
         pageTitle = 'Channels'
@@ -1151,7 +1151,7 @@ initSqlJs(config).then(function(SQL){
     } else if (mode.startsWith("profile")) {
       if (window.mode == "Toastr") {
         stmt = db.prepare("SELECT * FROM toasts WHERE kind = 1 AND pubkey = $pubkey ORDER BY created_at DESC");
-      } else if (window.mode == "Trollbox") {
+      } else if (window.mode == "YakClub") {
         stmt = db.prepare("SELECT * FROM toasts WHERE kind = 40 AND pubkey = $pubkey ORDER BY created_at DESC");
       }
       console.log("Filtering to profile " + mode.substring(8));
@@ -1173,7 +1173,7 @@ initSqlJs(config).then(function(SQL){
       if (window.mode == "Toastr") {
         emptyMsg = "Sorry, there are no toasts from profile " + mode.substring(8) + ' (' + pubkey + ')';
         pageTitle = 'Toasts from ' + username;
-      } else if (window.mode == "Trollbox") {
+      } else if (window.mode == "YakClub") {
         emptyMsg = "Sorry, there are no channels from profile " + mode.substring(8) + ' (' + pubkey + ')';
         pageTitle = 'Channels from ' + username;
       }
@@ -1182,7 +1182,7 @@ initSqlJs(config).then(function(SQL){
     } else if (mode.startsWith("toast")) {
       if (window.mode == "Toastr") {
         stmt = db.prepare("SELECT * FROM toasts WHERE kind = 1 AND id = $id ORDER BY created_at DESC");
-      } else if (window.mode == "Trollbox") {
+      } else if (window.mode == "YakClub") {
         stmt = db.prepare("SELECT * FROM toasts WHERE kind = 40 AND id = $id ORDER BY created_at DESC");
       }
 
@@ -1204,7 +1204,7 @@ initSqlJs(config).then(function(SQL){
       if (window.mode == "Toastr") {
         pageTitle = 'Viewing Thread';
         emptyMsg = "Sorry, there are no toasts corresponding to " + mode.substring(6) + ' (' + id + ')';
-      } else if (window.mode == "Trollbox") {
+      } else if (window.mode == "YakClub") {
         var channelName = 'Unknown';
         while (stmt.step()) {
           try {
@@ -1232,7 +1232,7 @@ initSqlJs(config).then(function(SQL){
 
       if (window.mode == "Toastr") {
         stmt = db.prepare("SELECT * FROM notes WHERE kind = 1 AND id <> $id AND note LIKE $noteid ORDER BY created_at ASC");
-      } else if (window.mode == "Trollbox") {
+      } else if (window.mode == "YakClub") {
         stmt = db.prepare("SELECT * FROM notes WHERE kind = 42 AND id <> $id AND note LIKE $noteid ORDER BY created_at ASC");
       }
       stmt.bind({$id: mode.substring(8), $noteid: '%' + mode.substring(8) + '%'});
@@ -1316,7 +1316,7 @@ initSqlJs(config).then(function(SQL){
         }
       }
 
-      if (window.mode == "Trollbox" && mode.startsWith('domain') && !isExactMatch) {
+      if (window.mode == "YakClub" && mode.startsWith('domain') && !isExactMatch) {
         isExactMatch = JSON.parse(event["content"])["name"].toLowerCase() == mode.substring(7).toLowerCase();
       }
 
@@ -1338,7 +1338,7 @@ initSqlJs(config).then(function(SQL){
         if (window.mode == "Toastr") {
           var ccStmt = db.prepare("SELECT COUNT(*) FROM notes WHERE kind = 1 AND id <> $id AND note LIKE $noteid");
           article.classList.add('toast');
-        } else if (window.mode == "Trollbox") {
+        } else if (window.mode == "YakClub") {
           var ccStmt = db.prepare("SELECT COUNT(*) FROM notes WHERE kind = 42 AND id <> $id AND note LIKE $noteid");
           var pStmt = db.prepare("SELECT COUNT(DISTINCT pubkey) FROM notes WHERE kind = 42 AND id <> $id AND note LIKE $noteid");
           pStmt.bind({$id: event.id, $noteid: '%' + event.id + '%'});
@@ -1377,7 +1377,7 @@ initSqlJs(config).then(function(SQL){
           } else {
             messagesString = 'comment';
           }
-        } else if (window.mode == "Trollbox") {
+        } else if (window.mode == "YakClub") {
           if (messagesCount != 1) {
             messagesString = 'messages';
           } else {
@@ -1401,7 +1401,7 @@ initSqlJs(config).then(function(SQL){
           var innerHTML = `<h2><a href="${row.url}">${event.content}</a></h2>
           <p><a class="messages"></a> &middot; ${epochTimestamp.toLocaleString()} <span class="middot">&middot;</span><br /> <a class="domain"></a> &middot; submitted by <a class="submitter"></a> </p>
           `
-        } else if (window.mode == "Trollbox") {
+        } else if (window.mode == "YakClub") {
           var roomName = 'Unknown';
 
           try {
@@ -1427,7 +1427,7 @@ initSqlJs(config).then(function(SQL){
         messagesLink.href = '#' + window.NostrTools.nip19.noteEncode(event.id);
         messagesLink.dataset.id = window.NostrTools.nip19.noteEncode(event.id);
 
-        if (window.mode == "Trollbox") {
+        if (window.mode == "YakClub") {
           var titleLink = article.querySelector('a.title');
           titleLink.onclick = messagesLink.onclick;
           titleLink.href = '#' + window.NostrTools.nip19.noteEncode(event.id);
@@ -1506,7 +1506,7 @@ initSqlJs(config).then(function(SQL){
         var classFilter = '';
         if (window.mode == "Toastr") {
           classFilter = '.toast';
-        } else if (window.mode == "Trollbox") {
+        } else if (window.mode == "YakClub") {
           classFilter = '.note';
         }
 
@@ -1521,7 +1521,7 @@ initSqlJs(config).then(function(SQL){
     if (pageTitle !== undefined) {
       if (pageTitle !== undefined) {
         document.querySelector('h1#title').innerHTML = pageTitle;
-        document.title = 'Trollbox - ' + pageTitle;
+        document.title = 'Yak Club - ' + pageTitle;
       }
 
       if (pageSubTitle !== undefined) {
@@ -1533,10 +1533,10 @@ initSqlJs(config).then(function(SQL){
 
     try {
       container.querySelector('.toasts-loading').classList.remove("active");
-      if (showEmptyMessage || (window.mode == "Trollbox" && mode.startsWith('domain-') && !isExactMatch)) {
+      if (showEmptyMessage || (window.mode == "YakClub" && mode.startsWith('domain-') && !isExactMatch)) {
         var actionMsg = 'Create';
         // If a room similar to the one we were looking for exists, display the 'close match' message
-        // typeof closeMatchMsg !== 'undefined' is basically equivalent to (window.mode == "Trollbox" && mode.startsWith('domain-'))
+        // typeof closeMatchMsg !== 'undefined' is basically equivalent to (window.mode == "YakClub" && mode.startsWith('domain-'))
         if (typeof closeMatchMsg !== 'undefined' && !showEmptyMessage && !isExactMatch) {
           container.querySelector('.toasts-empty').innerHTML = closeMatchMsg;
           actionMsg = 'Create channel ' + mode.substring(7);
@@ -1548,11 +1548,11 @@ initSqlJs(config).then(function(SQL){
         }
 
         // Add a button to the empty message that opens the newToast UI
-        if (mode.startsWith('url-') || (window.mode == "Trollbox" && mode.startsWith('domain-'))) {
+        if (mode.startsWith('url-') || (window.mode == "YakClub" && mode.startsWith('domain-'))) {
           if (window.mode == "Toastr") {
             var newButton = '<button class=\'valid\' onclick=\'document.querySelectorAll("#topbar nav .right > a")[0].click()\'>' + actionMsg + '</button>';
             document.querySelector('#newToastContainer input[name="url"]').value = mode.substring(4);
-          } else if (window.mode == "Trollbox") {
+          } else if (window.mode == "YakClub") {
             var newChannelForm = `<form class="toast-new-form" autocomplete="off" onsubmit="newNoteSubmit(event)" action="">
               <input type="hidden" name="url" value="${mode.substring(7)}" placeholder="Room or domain name" required="" onkeydown="validateToast(event, 1)">
               <button type="submit" class="toast-submit-button">${actionMsg}</button>
@@ -1592,7 +1592,7 @@ initSqlJs(config).then(function(SQL){
     var submitText;
     if (window.mode == "Toastr") {
       submitText = "Toast";
-    } else if (window.mode == "Trollbox") {
+    } else if (window.mode == "YakClub") {
       submitText = "Create";
     }
 
@@ -1608,7 +1608,7 @@ initSqlJs(config).then(function(SQL){
           if (window.mode == "Toastr") { innerHTML += `
             <input type="url" name="url" value="" placeholder="URL" required onkeydown="validateToast(event, 1)"></input>
             <input type="text" name="title" placeholder="Write a title..." required onkeydown="validateToast(event, 1)"></input>
-          `} else if (window.mode == "Trollbox") { innerHTML += `
+          `} else if (window.mode == "YakClub") { innerHTML += `
             <input type="text" name="url" value="" placeholder="Room or domain name" required onkeydown="validateToast(event, 1)"></input>
           `}
 

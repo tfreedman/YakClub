@@ -292,7 +292,7 @@ body {
       }
     }
 
-    #trollbox, #new {
+    #yak, #new {
       .hidden {display: none !important}
       & > .toasts-container > .toasts > .toast {max-width: 100% !important}
 
