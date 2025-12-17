@@ -329,7 +329,7 @@ body {
       }
     }
 
-    #yak, #new {
+    #yak, #new, #alerts {
       .hidden {display: none !important}
       & > .toasts-container > .toasts > .toast {max-width: 100% !important}
       .toasts-container .title::before {content: '✦ '}

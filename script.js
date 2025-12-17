@@ -1,7 +1,7 @@
 window.mode = "YakClub";
 var users = {};
 window.pool = null;
-window.version = 2;
+window.version = 3;
 window.hasFinishedLoading = false;
 var pubKey;
 var snd = new Audio("/pop.mp3");
@@ -671,6 +671,7 @@ initSqlJs(config).then(function(SQL){
           displayProfile(window.pubKey);
         }
         db.run("UPDATE notes SET id = ? created_at = ?, kind = ?, note = ? WHERE pubkey = ? AND created_at < ?)", [value['id'], value['created_at'], value['kind'], note, value['pubkey'], value['created_at']]);
+
         dirty = true;
         console.log('Adding ' + value['pubkey'] + ' to window.users...');
       }
@@ -701,6 +702,9 @@ initSqlJs(config).then(function(SQL){
       console.log('Inserting ' + value['id'] + ' into Notes DB...');
       db.run("INSERT OR IGNORE INTO notes (id, created_at, pubkey, kind, note) VALUES (?, ?, ?, ?, ?)", [value['id'], value['created_at'], value['pubkey'], value['kind'], note]);
 
+      // TODO: check if the note refers to us first
+      //db.run("INSERT OR IGNORE INTO alerts (id, created_at, pubkey, note, read) VALUES (?, ?, ?, ?, ?, ?)", [value['id'], value['created_at'], value['pubkey'], note, false]);
+
       // Update the room's timestamp on each message received
       db.run("UPDATE toasts SET created_at = MAX(created_at, ?) WHERE id = ?", [value['created_at'], parent]);
 
@@ -726,6 +730,7 @@ initSqlJs(config).then(function(SQL){
     var db = new SQL.Database();
     db.run("CREATE TABLE IF NOT EXISTS toasts (id TEXT NOT NULL PRIMARY KEY, created_at INTEGER NOT NULL, domain TEXT NOT NULL, url TEXT NOT NULL, pubkey TEXT NOT NULL, kind INTEGER NOT NULL, note TEXT NOT NULL);");
     db.run("CREATE TABLE IF NOT EXISTS notes (id TEXT NOT NULL PRIMARY KEY, created_at INTEGER NOT NULL, pubkey TEXT NOT NULL, kind INTEGER NOT NULL, note TEXT NOT NULL);");
+    db.run("CREATE TABLE IF NOT EXISTS alerts (id TEXT NOT NULL PRIMARY KEY, created_at INTEGER NOT NULL, pubkey TEXT NOT NULL, note TEXT NOT NULL, read BOOLEAN NOT NULL);");
     db.run("CREATE INDEX idx_toasts_domain ON toasts (domain);")
   }
 
@@ -865,12 +870,15 @@ initSqlJs(config).then(function(SQL){
         onevent(event) {
           if (event && event.pubkey && event.content && event.kind == kind && window.NostrTools.verifyEvent(event, event.pubkey)) {
             importNote(event, window.hasFinishedLoading); // if the page has finished loading, save the DB in response to any change.
+
             if (window.hasFinishedLoading) { // Trigger a redraw if this is after the initial load...
+              // Redraw the Alerts page - TODO: don't just duplicate recents...
+              drawToasts(document.querySelector('#alerts .toasts-container'), window.users, "recent");
+
               if (document.getElementById('search-bar').value == "") { // If yes
                 drawToasts(document.querySelector('.toasts-container'), window.users, "recent");
                 window.lastDrawMode = "recent";
               } else { // If no.
-
                 // Only redraw rooms we're actually in if a new message comes in - otherwise, just ignore it.
                 var weShouldRedraw = false;
                 if (document.getElementById('search-bar').value.startsWith('note')) {
@@ -1046,6 +1054,9 @@ initSqlJs(config).then(function(SQL){
             if (!window.browserExtension) {
               // Draw the new toast UI
               newToast(document.querySelector('#newToastContainer'), {url: ''});
+
+              // Draw the Alerts page - TODO: don't just duplicate recents...
+              drawToasts(document.querySelector('#alerts .toasts-container'), window.users, "recent");
 
               // Ready to draw page contents - has someone attempted a search (via the URL slug) ?
               if (window.location.hash) {
