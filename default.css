@@ -354,6 +354,13 @@ body {
       }
       .toasts {margin-top: 10px; margin-left: 20px}
 
+      .toasts .favourites .star {
+        fill: #fff;
+        width: 20px;
+        position: relative;
+        top: 5px;
+      }
+
       .toasts-loading {
         &.active {display: visible;}
         display: none;
@@ -371,8 +378,12 @@ body {
         max-width: 480px;
         padding: 20px 0;
 
+        h2 + p {
+          margin-left: 20px;
+        }
+
         p, p a {
-         color: #fff; margin-left: 20px;
+         color: #fff;
         }
 
         p {
