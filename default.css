@@ -348,19 +348,13 @@ body {
     #yak, #new, #alerts {
       .hidden {display: none !important}
       & > .toasts-container > .toasts > .toast {max-width: 100% !important}
-      .toasts-container .title::before {content: '✦ '}
       & > .toasts-container > .toasts > .children {
         margin-left: 0;
       }
       .toasts {margin-top: 10px; margin-left: 20px}
 
-      .toasts .favourites .star {
-        pointer-events: none;
-        fill: #fff;
-        width: 20px;
-        position: relative;
-        top: 5px;
-      }
+      .toasts .favourites {font-size: 24px; cursor: pointer}
+      .toasts .favourites + h2 {display: inline}
 
       .toasts-loading {
         &.active {display: visible;}
