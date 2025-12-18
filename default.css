@@ -355,6 +355,7 @@ body {
       .toasts {margin-top: 10px; margin-left: 20px}
 
       .toasts .favourites .star {
+        pointer-events: none;
         fill: #fff;
         width: 20px;
         position: relative;
