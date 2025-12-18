@@ -1,7 +1,7 @@
 window.mode = "YakClub";
 var users = {};
 window.pool = null;
-window.version = 3;
+window.version = 4;
 window.hasFinishedLoading = false;
 var pubKey;
 var snd = new Audio("/pop.mp3");
@@ -690,20 +690,40 @@ initSqlJs(config).then(function(SQL){
       }
 
       var parent = '';
+      var shouldAlert = false;
       // The time a room was created is mostly irrelevant - we need the time the last message in the room was received.
       // Every time we get a chat message, figure out what room it belongs to, and update that room's timestamp
 
       value["tags"].forEach((tag) => {
-        if (tag[0] == "e" && tag[3] == "root") {
-          parent = tag[1];
+        if (tag[0] == "e") {
+          if (tag[3] == "root") {
+            parent = tag[1];
+          }
+
+          // if the e Tag refers to an event we wrote
+          // AND we didn't write the event
+          // AND it isn't a root e Tag, because we don't care about rooms we created
+          if (tag[4] && tag[4] == window.pubKey && value["pubkey"] != window.pubKey && tag[3] != "root") {
+            shouldAlert = true;
+          }
+        }
+
+        // if the p Tag refers to us
+        // AND we didn't write the event
+
+        if (tag[0] == "p") {
+          if (tag[1] == window.pubKey && value["pubkey"] != window.pubKey) {
+            shouldAlert = true;
+          }
         }
       });
 
       console.log('Inserting ' + value['id'] + ' into Notes DB...');
       db.run("INSERT OR IGNORE INTO notes (id, created_at, pubkey, kind, note) VALUES (?, ?, ?, ?, ?)", [value['id'], value['created_at'], value['pubkey'], value['kind'], note]);
 
-      // TODO: check if the note refers to us first
-      //db.run("INSERT OR IGNORE INTO alerts (id, created_at, pubkey, note, read) VALUES (?, ?, ?, ?, ?, ?)", [value['id'], value['created_at'], value['pubkey'], note, false]);
+      if (shouldAlert) {
+        db.run("INSERT OR IGNORE INTO alerts (id, created_at, pubkey, note, read) VALUES (?, ?, ?, ?, ?)", [value['id'], value['created_at'], value['pubkey'], note, false]);
+      }
 
       // Update the room's timestamp on each message received
       db.run("UPDATE toasts SET created_at = MAX(created_at, ?) WHERE id = ?", [value['created_at'], parent]);
@@ -844,6 +864,11 @@ initSqlJs(config).then(function(SQL){
   function fetchNotes() {
     var filters = [];
     var kind;
+
+
+    // TODO:REMOVE ME
+    // window.db.run("DELETE FROM alerts WHERE 1=1");
+
     if (window.mode == "Toastr") {
       var stmt = window.db.prepare("SELECT * FROM toasts WHERE kind = 1");
       kind = 1; // children of toasts are also kind 1
@@ -873,7 +898,7 @@ initSqlJs(config).then(function(SQL){
 
             if (window.hasFinishedLoading) { // Trigger a redraw if this is after the initial load...
               // Redraw the Alerts page - TODO: don't just duplicate recents...
-              drawToasts(document.querySelector('#alerts .toasts-container'), window.users, "recent");
+              drawToasts(document.querySelector('#alerts .toasts-container'), window.users, "alerts");
 
               if (document.getElementById('search-bar').value == "") { // If yes
                 drawToasts(document.querySelector('.toasts-container'), window.users, "recent");
@@ -1056,7 +1081,7 @@ initSqlJs(config).then(function(SQL){
               newToast(document.querySelector('#newToastContainer'), {url: ''});
 
               // Draw the Alerts page - TODO: don't just duplicate recents...
-              drawToasts(document.querySelector('#alerts .toasts-container'), window.users, "recent");
+              drawToasts(document.querySelector('#alerts .toasts-container'), window.users, "alerts");
 
               // Ready to draw page contents - has someone attempted a search (via the URL slug) ?
               if (window.location.hash) {
@@ -1080,6 +1105,17 @@ initSqlJs(config).then(function(SQL){
   }
 
   function drawToasts(container, knownUsers, mode) {
+    var alerts = {};
+
+    if (mode == "alerts") {
+      var stmt = db.prepare("SELECT * FROM alerts");
+      while(stmt.step()) {
+        const row = stmt.getAsObject();
+        alerts[row.id] = row.read;
+      }
+      window.alerts = alerts;
+    }
+
     console.log("Drawing Toasts! - Mode = " + mode);
     try {
       container.querySelector('.toasts-loading').classList.add("active");
@@ -1148,6 +1184,15 @@ initSqlJs(config).then(function(SQL){
 
       shouldShowHeadings = true;
       shouldShowMessages = false;
+    } else if (mode == "alerts") {
+      var notes = "'" + Object.keys(alerts).join("','") + "'"; // couldn't get prepared statements to work
+      stmt = db.prepare("SELECT * FROM notes WHERE id IN (" + notes + ") ORDER BY created_at DESC");
+
+      emptyMsg = "Sorry, there are no alerts";
+      pageTitle = 'Alerts'
+      pageSubTitle = '';
+      showFilters = false;
+
     } else if (mode.startsWith("url-")) {
       stmt = db.prepare("SELECT * FROM toasts WHERE kind = 1 AND url = $url ORDER BY created_at DESC");
       console.log("Filtering to URL " + mode.substring(4));
