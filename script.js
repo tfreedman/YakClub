@@ -478,7 +478,8 @@ function displayToast(parent, data, note, params) {
             <div class="details">
               <span class="username">${data.username}</span>
             </div>
-            <div class="pubkey">${window.NostrTools.nip19.npubEncode(data.pubkey)}</div>
+            <div class="pubkey">${window.NostrTools.nip19.npubEncode(data.pubkey)}</div> 
+            <div class="read">${params.read}</div>
           </header>
         </div>
       </div>
@@ -867,7 +868,7 @@ initSqlJs(config).then(function(SQL){
 
 
     // TODO:REMOVE ME
-    // window.db.run("DELETE FROM alerts WHERE 1=1");
+//    window.db.run("DELETE FROM alerts WHERE 1=1");
 
     if (window.mode == "Toastr") {
       var stmt = window.db.prepare("SELECT * FROM toasts WHERE kind = 1");
@@ -999,6 +1000,16 @@ initSqlJs(config).then(function(SQL){
     searchResults(document.getElementById('search-bar').value);
   }
 
+  var alertsLink = document.querySelector('a#alertsLink');
+  alertsLink.onclick = function(event) {
+    event.preventDefault();
+    var stmt = window.db.exec("UPDATE alerts SET read = true WHERE read = false");
+
+    var dbstr = toBinString(window.db.export());
+    updateAlertsIndicator();
+    window.localStorage.setItem("yakclub.sqlite", dbstr);
+  }
+
   window.addEventListener('popstate', function(event) {
     if (event.state) {
       state = event.state;
@@ -1023,6 +1034,18 @@ initSqlJs(config).then(function(SQL){
 
   function onlyUnique(value, index, array) {
     return array.indexOf(value) === index;
+  }
+
+  function updateAlertsIndicator() {
+    var alertsCount = db.exec("SELECT COUNT(*) FROM alerts WHERE read = false")[0].values[0][0];
+
+    if (alertsCount >= 1) {
+      console.log(alertsCount + ' - activating indicator');
+      document.querySelector('#alertsIndicator').classList.add('active');
+    } else {
+      console.log(alertsCount + ' - removing indicator');
+      document.querySelector('#alertsIndicator').classList.remove('active');
+    }
   }
 
   function fetchAuthorInfo() {
@@ -1114,6 +1137,8 @@ initSqlJs(config).then(function(SQL){
         alerts[row.id] = row.read;
       }
       window.alerts = alerts;
+
+      updateAlertsIndicator();
     }
 
     console.log("Drawing Toasts! - Mode = " + mode);
@@ -1521,7 +1546,7 @@ initSqlJs(config).then(function(SQL){
         // TODO: populate this
         var isReply = false;
         var reply = {};
-        displayToast(container.querySelector('.toasts'), {username: username, pubkey: event.pubkey, message: event.content, avatarURL: avatarURL, isReply: isReply, reply: reply, created_at: event.created_at}, event, {lastPubkey: lastPubkey, lastTimestamp: lastTimestamp, users: users});
+        displayToast(container.querySelector('.toasts'), {username: username, pubkey: event.pubkey, message: event.content, avatarURL: avatarURL, isReply: isReply, reply: reply, created_at: event.created_at}, event, {lastPubkey: lastPubkey, lastTimestamp: lastTimestamp, users: users, mode: mode, read: alerts[event.id]});
         lastPubkey = event.pubkey;
         lastTimestamp = event.created_at;
       }
