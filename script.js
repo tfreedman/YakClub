@@ -1,7 +1,7 @@
 window.mode = "YakClub";
 var users = {};
 window.pool = null;
-window.version = 5;
+window.version = 6;
 window.hasFinishedLoading = false;
 var pubKey;
 var snd = new Audio("/pop.mp3");
@@ -643,7 +643,7 @@ initSqlJs(config).then(function(SQL){
     }
 
     console.log('Inserting ' + value['id'] + ' - (' + domain + ') into Toasts DB...');
-    db.run("INSERT OR IGNORE INTO toasts (id, created_at, domain, url, pubkey, kind, note, favourite) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", [value['id'], value['created_at'], domain, taggedUrl, value['pubkey'], value['kind'], note, false]);
+    db.run("INSERT OR IGNORE INTO toasts (id, created_at, domain, url, pubkey, kind, note, favourite, read_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", [value['id'], value['created_at'], domain, taggedUrl, value['pubkey'], value['kind'], note, false, 0]);
 
     if (immediateWrite) {
       var dbstr = toBinString(window.db.export());
@@ -749,7 +749,7 @@ initSqlJs(config).then(function(SQL){
   } else {
     console.log("Database version mismatch or undefined - creating a new DB");
     var db = new SQL.Database();
-    db.run("CREATE TABLE IF NOT EXISTS toasts (id TEXT NOT NULL PRIMARY KEY, created_at INTEGER NOT NULL, domain TEXT NOT NULL, url TEXT NOT NULL, pubkey TEXT NOT NULL, kind INTEGER NOT NULL, note TEXT NOT NULL, favourite BOOLEAN NOT NULL);");
+    db.run("CREATE TABLE IF NOT EXISTS toasts (id TEXT NOT NULL PRIMARY KEY, created_at INTEGER NOT NULL, domain TEXT NOT NULL, url TEXT NOT NULL, pubkey TEXT NOT NULL, kind INTEGER NOT NULL, note TEXT NOT NULL, favourite BOOLEAN NOT NULL, read_at INTEGER NOT NULL);");
     db.run("CREATE TABLE IF NOT EXISTS notes (id TEXT NOT NULL PRIMARY KEY, created_at INTEGER NOT NULL, pubkey TEXT NOT NULL, kind INTEGER NOT NULL, note TEXT NOT NULL);");
     db.run("CREATE TABLE IF NOT EXISTS alerts (id TEXT NOT NULL PRIMARY KEY, created_at INTEGER NOT NULL, pubkey TEXT NOT NULL, note TEXT NOT NULL, read BOOLEAN NOT NULL);");
     db.run("CREATE INDEX idx_toasts_domain ON toasts (domain);")
@@ -1061,6 +1061,13 @@ initSqlJs(config).then(function(SQL){
       var toast = stmt.getAsObject();
       window.db.run("UPDATE toasts SET favourite = ? WHERE id = ?", [!toast.favourite, id]);
     }
+
+    var dbstr = toBinString(window.db.export());
+    window.localStorage.setItem("yakclub.sqlite", dbstr);
+  }
+
+  function markToastAsRead(id) {
+    window.db.run("UPDATE toasts SET read_at = ? WHERE id = ?", [Math.floor(Date.now() / 1000), window.NostrTools.nip19.decode(id)["data"]]);
 
     var dbstr = toBinString(window.db.export());
     window.localStorage.setItem("yakclub.sqlite", dbstr);
@@ -1453,6 +1460,13 @@ initSqlJs(config).then(function(SQL){
 
           article.classList.add('toast');
 
+          // We don't care when a room was created - instead, we're storing the last message's timestamp in there.
+          var isUnread = row.created_at >= row.read_at;
+
+          if (isUnread) {
+            article.classList.add('unread');
+          }
+
           if (isParticipant) {
             article.classList.add('participant');
           }
@@ -1546,6 +1560,8 @@ initSqlJs(config).then(function(SQL){
         messagesLink.innerHTML = `${messagesCount} ${messagesString}`
         messagesLink.onclick = function(event) {
           event.preventDefault();
+
+          markToastAsRead(event.target.dataset.id);
           document.getElementById('search-bar').value = event.target.dataset.id;
           searchResults(document.getElementById('search-bar').value);
           history.pushState({hash: event.target.dataset.id, title: document.title}, '', '#' + event.target.dataset.id);

@@ -275,6 +275,8 @@ body {
         &:hover {text-decoration: underline}
       }
 
+      .unread h2 a {color: #fff}
+
       h2 {
         a {color: #2d6084; text-decoration: none}
         margin: 0;
