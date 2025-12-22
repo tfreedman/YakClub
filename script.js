@@ -35,6 +35,53 @@ function syncDatabase() {
   window.localStorage.setItem(window.mode + ".sqlite", dbstr);
 }
 
+function exportSettings() {
+  var settings = new Object();
+  if (window.mode == "YakClub") {
+    // This currently only exports favourites
+
+    settings["toasts"] = [];
+    var stmt = window.db.prepare("SELECT * FROM toasts");
+
+    while(stmt.step()) {
+      const row = stmt.getAsObject();
+      if (row.favourite) {
+        settings["toasts"].push({id: row.id, favourite: true})
+      }
+    }
+  }
+
+  console.log(JSON.stringify(settings));
+  return JSON.stringify(settings);
+
+  // TODO: dump this into an encrypted Nostr note, sign it, and upload it
+}
+
+function importSettings(settings) {
+  settings = JSON.parse(settings);
+
+  if (window.mode == "YakClub") {
+    // This currently only imports favourites
+
+    Object.keys(settings["toasts"]).forEach(key => {
+      var toast = settings["toasts"][key];
+      var stmt = window.db.prepare("SELECT * FROM toasts WHERE id = $id");
+      stmt.bind({$id: toast.id});
+      var result = null;
+      while(stmt.step()) {
+        result = toast.id;
+        console.log('setting favourite on toast ' + toast.id);
+        window.db.run("UPDATE toasts SET favourite = ? WHERE id = ?", [toast.favourite, toast.id]);
+      }
+      if (result === null) {
+        console.log('No match for ' + toast.id + ' in toasts table');
+      }
+    });
+  }
+  // TODO: redraw UI so that the settings that were imported are actually visible
+  syncDatabase();
+}
+
 function filterToasts(event) {
   event.preventDefault();
   console.log(event.target.dataset.filter);
