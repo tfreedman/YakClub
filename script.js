@@ -38,7 +38,9 @@ function syncDatabase() {
 function exportSettings() {
   var settings = new Object();
   if (window.mode == "YakClub") {
-    // This currently only exports favourites
+    // This currently only exports favourites and alerts
+
+    // Favourites
 
     settings["toasts"] = [];
     var stmt = window.db.prepare("SELECT * FROM toasts");
@@ -47,6 +49,18 @@ function exportSettings() {
       const row = stmt.getAsObject();
       if (row.favourite) {
         settings["toasts"].push({id: row.id, favourite: true})
+      }
+    }
+
+    // Alerts
+
+    settings["alerts"] = [];
+    var stmt = window.db.prepare("SELECT * FROM alerts");
+
+    while(stmt.step()) {
+      const row = stmt.getAsObject();
+      if (row.read) {
+        settings["alerts"].push({id: row.id, read: true})
       }
     }
   }
@@ -61,8 +75,9 @@ function importSettings(settings) {
   settings = JSON.parse(settings);
 
   if (window.mode == "YakClub") {
-    // This currently only imports favourites
+    // This currently only imports favourites and alerts
 
+    // Favourites
     Object.keys(settings["toasts"]).forEach(key => {
       var toast = settings["toasts"][key];
       var stmt = window.db.prepare("SELECT * FROM toasts WHERE id = $id");
@@ -77,6 +92,24 @@ function importSettings(settings) {
         console.log('No match for ' + toast.id + ' in toasts table');
       }
     });
+
+    // Alerts
+    Object.keys(settings["alerts"]).forEach(key => {
+      var note = settings["alerts"][key];
+      var stmt = window.db.prepare("SELECT * FROM alerts WHERE id = $id");
+      stmt.bind({$id: note.id});
+      var result = null;
+      while(stmt.step()) {
+        result = note.id;
+        console.log('setting read on alert ' + note.id);
+        window.db.run("UPDATE alerts SET read = ? WHERE id = ?", [note.read, note.id]);
+      }
+      if (result === null) {
+        console.log('No match for ' + note.id + ' in alerts table');
+      }
+    });
+
+
   }
   // TODO: redraw UI so that the settings that were imported are actually visible
   syncDatabase();
