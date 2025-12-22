@@ -815,6 +815,17 @@ initSqlJs(config).then(function(SQL){
 
       dirty = true;
       console.log('Adding ' + value['id'] + ' to notes');
+    } else if (value['kind'] == 30078 && value["pubkey"] == window.pubKey) { // NIP-78 - arbitrary custom app data
+      value["tags"].forEach((tag) => {
+        if (tag[0] == "d" && tag[1] == window.mode) { // Only import settings from this specific application
+          console.log('Inserting ' + value['id'] + ' into Notes DB...');
+
+          // TODO: only import _newer_ events than the current row, and only allow a single event of this kind into the DB
+          db.run("INSERT OR IGNORE INTO notes (id, created_at, pubkey, kind, note) VALUES (?, ?, ?, ?, ?)", [value['id'], value['created_at'], value['pubkey'], value['kind'], note]);
+
+          // Parse the settings inside the note, and import them into the DB
+          importSettings(note);
+        }
     } else {
       console.log('Not inserting ' + value['id'] + ' into Notes DB - not a valid kind 0 event'); // Worry about non-kind 0 stuff later
     }
