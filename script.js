@@ -30,6 +30,11 @@ config = {
   locateFile: filename => `${filename}`
 }
 
+function syncDatabase() {
+  var dbstr = toBinString(window.db.export());
+  window.localStorage.setItem(window.mode + ".sqlite", dbstr);
+}
+
 function filterToasts(event) {
   event.preventDefault();
   console.log(event.target.dataset.filter);
@@ -646,8 +651,7 @@ initSqlJs(config).then(function(SQL){
     db.run("INSERT OR IGNORE INTO toasts (id, created_at, domain, url, pubkey, kind, note, favourite, read_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", [value['id'], value['created_at'], domain, taggedUrl, value['pubkey'], value['kind'], note, false, 0]);
 
     if (immediateWrite) {
-      var dbstr = toBinString(window.db.export());
-      window.localStorage.setItem("yakclub.sqlite", dbstr);
+      syncDatabase();
     }
   }
 
@@ -735,13 +739,12 @@ initSqlJs(config).then(function(SQL){
       console.log('Not inserting ' + value['id'] + ' into Notes DB - not a valid kind 0 event'); // Worry about non-kind 0 stuff later
     }
     if (dirty && immediateWrite) {
-      var dbstr = toBinString(window.db.export());
-      window.localStorage.setItem("yakclub.sqlite", dbstr);
+      syncDatabase();
     }
   }
 
   var dbVersion = window.localStorage.getItem("version");
-  var dbstr = window.localStorage.getItem("yakclub.sqlite");
+  var dbstr = window.localStorage.getItem(window.mode + ".sqlite");
 
   if (dbstr && dbVersion !== null && dbVersion == window.version) {
     console.log("Loading existing database - version numbers match");
@@ -756,7 +759,7 @@ initSqlJs(config).then(function(SQL){
   }
 
   var dbstr = toBinString(db.export());
-  window.localStorage.setItem("yakclub.sqlite", dbstr);
+  window.localStorage.setItem(window.mode + ".sqlite", dbstr);
   window.localStorage.setItem("version", window.version);
   window.db = db;
 
@@ -853,8 +856,7 @@ initSqlJs(config).then(function(SQL){
       },
       oneose() {
         if (dirty) {
-          var dbstr = toBinString(window.db.export());
-          window.localStorage.setItem("yakclub.sqlite", dbstr);
+          syncDatabase();
         }
         fetchNotes();
         //h.close();
@@ -1005,9 +1007,8 @@ initSqlJs(config).then(function(SQL){
     event.preventDefault();
     var stmt = window.db.exec("UPDATE alerts SET read = true WHERE read = false");
 
-    var dbstr = toBinString(window.db.export());
     updateAlertsIndicator();
-    window.localStorage.setItem("yakclub.sqlite", dbstr);
+    syncDatabase();
   }
 
   window.addEventListener('popstate', function(event) {
@@ -1062,15 +1063,13 @@ initSqlJs(config).then(function(SQL){
       window.db.run("UPDATE toasts SET favourite = ? WHERE id = ?", [!toast.favourite, id]);
     }
 
-    var dbstr = toBinString(window.db.export());
-    window.localStorage.setItem("yakclub.sqlite", dbstr);
+    syncDatabase();
   }
 
   function markToastAsRead(id) {
     window.db.run("UPDATE toasts SET read_at = ? WHERE id = ?", [Math.floor(Date.now() / 1000), window.NostrTools.nip19.decode(id)["data"]]);
 
-    var dbstr = toBinString(window.db.export());
-    window.localStorage.setItem("yakclub.sqlite", dbstr);
+    syncDatabase();
   }
 
   function fetchAuthorInfo() {
@@ -1120,8 +1119,7 @@ initSqlJs(config).then(function(SQL){
         },
         oneose() {
           if (dirty) {
-            var dbstr = toBinString(window.db.export());
-            window.localStorage.setItem("yakclub.sqlite", dbstr);
+            syncDatabase();
           }
           if (!window.hasFinishedLoading) {
             if (!window.browserExtension) {
