@@ -755,7 +755,7 @@ initSqlJs(config).then(function(SQL){
         if (value['pubkey'] == window.pubKey) {
           displayProfile(window.pubKey);
         }
-        db.run("UPDATE notes SET id = ? created_at = ?, kind = ?, note = ? WHERE pubkey = ? AND created_at < ?)", [value['id'], value['created_at'], value['kind'], note, value['pubkey'], value['created_at']]);
+        db.run("UPDATE notes SET id = ?, created_at = ?, kind = ?, note = ? WHERE pubkey = ? AND created_at < ? AND kind = 0)", [value['id'], value['created_at'], value['kind'], note, value['pubkey'], value['created_at']]);
 
         dirty = true;
         console.log('Adding ' + value['pubkey'] + ' to window.users...');
@@ -816,16 +816,36 @@ initSqlJs(config).then(function(SQL){
       dirty = true;
       console.log('Adding ' + value['id'] + ' to notes');
     } else if (value['kind'] == 30078 && value["pubkey"] == window.pubKey) { // NIP-78 - arbitrary custom app data
+      var existing_timestamp = null;
+
+      var stmt = db.prepare("SELECT * FROM notes WHERE pubkey = ? AND kind = 30078", [window.pubkey]);
+      while(stmt.step()) {
+        const row = stmt.getAsObject();
+        var existing_timestamp = row.created_at;
+      }
+
+      var okayToImport = false;
       value["tags"].forEach((tag) => {
         if (tag[0] == "d" && tag[1] == window.mode) { // Only import settings from this specific application
+          okayToImport = true;
+        }
+      });
+
+      if (okayToImport) {
+        if (existing_timestamp === null) {
           console.log('Inserting ' + value['id'] + ' into Notes DB...');
-
-          // TODO: only import _newer_ events than the current row, and only allow a single event of this kind into the DB
-          db.run("INSERT OR IGNORE INTO notes (id, created_at, pubkey, kind, note) VALUES (?, ?, ?, ?, ?)", [value['id'], value['created_at'], value['pubkey'], value['kind'], note]);
-
+          db.run("INSERT INTO notes (id, created_at, pubkey, kind, note) VALUES (?, ?, ?, ?, ?)", [value['id'], value['created_at'], value['pubkey'], value['kind'], note]);
+          dirty = true;
+        } else if (existing_timestamp < value['created_at']) {
+          console.log('Updating ' + value['id'] + ' into Notes DB...');
+          db.run("UPDATE notes SET id = ?, created_at = ?, kind = ?, note = ? WHERE pubkey = ? AND created_at < ? AND kind = 30078)", [value['id'], value['created_at'], value['kind'], note, value['pubkey'], value['created_at']]);
+          dirty = true;
+        }
+        if (dirty) {
           // Parse the settings inside the note, and import them into the DB
           importSettings(note);
         }
+      }
     } else {
       console.log('Not inserting ' + value['id'] + ' into Notes DB - not a valid kind 0 event'); // Worry about non-kind 0 stuff later
     }
