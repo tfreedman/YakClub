@@ -107,11 +107,10 @@ body {
   p {line-height: 1.5em}
 
   #topbar {
-    height: 300px;
     width: 90%;
     position: relative;
     z-index: 2;
-    margin: 0 auto -140px;
+    margin: 0 auto;
 
     nav {
       display: flex;
@@ -223,7 +222,7 @@ body {
   #container {
     width: 90%;
     margin: 0 auto;
-    padding: 50px;
+    padding: 0 50px 50px;
     border-radius: 50px;
     position: relative;
     z-index: 2;
@@ -712,25 +711,40 @@ body {
   }
 }
 
-@media screen and (max-width: 1024px) {
+@media screen and (max-width: 1000px) {
   body {
+    #topbar {width: 100%; padding: 0 10px}
+    #container {width: 100%}
+  }
+}
+
+@media screen and (max-width: 930px) {
+  body #topbar {
+    nav {
+      .right {margin-top: 40px}
+      .left #logo {margin-top: -18px; width: 270px; height: 170px}
+    }
+  }
+}
+
+@media screen and (max-width: 840px) {
+  body #topbar {
     nav .right a span {font-size: 0}
   }
 }
 
-@media screen and (max-width: 590px) {
-  body {
-    #container {padding: 0 10px 50px 10px; width: 100%}
-    #topbar {padding: 20px 10px 0 10px; width: 100%}
-    .toast {br {display: block !important}}
-    .middot {opacity: 0}
-
-    #search-container {
-      #search-bar {
-        width: 250px !important;
-      }
-
-      & > svg {display: inline-block !important}
+@media screen and (min-width: 512px) and (max-width: 660px) {
+  body #topbar {
+    nav {
+      .right {margin-top: 18px; #search-container #search-wrapper #search-bar {width: 250px}}
+      .left #logo {margin-top: -10px; width: 180px; height: 113px}
     }
+  }
+}
+
+@media screen and (max-width: 520px) {
+  body #topbar nav {
+    .right {margin-top: 18px; #search-container #search-wrapper #search-bar {width: calc(100vw - 90px)}}
+    .left #logo {margin-top: -10px; width: 180px; height: 113px; &.hidden {opacity: 0; width: 1px}}
   }
 }

@@ -13,12 +13,14 @@ function toggleSearchBox() {
     document.querySelector('#search-container #xmark').style.display = 'none';
     document.querySelector('#search-container #search-wrapper').style.display = 'none';
     document.querySelector('#search-container #search').style.display = 'inline-block';
+    document.querySelector('#logo').classList.remove('hidden');
     document.querySelectorAll('#topbar nav .right > a').forEach(i => i.style.display = 'inline-block');
     showSearchIcon = false;
   } else {
     document.querySelector('#search-container #xmark').style.display = 'inline-block';
     document.querySelector('#search-container #search-wrapper').style.display = 'inline-block';
     document.querySelector('#search-container #search').style.display = 'none';
+    document.querySelector('#logo').classList.add('hidden');
     document.querySelectorAll('#topbar nav .right > a').forEach(i => i.style.display = 'none');
     showSearchIcon = true;
   }
