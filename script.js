@@ -609,7 +609,8 @@ function displayToast(parent, data, note, params) {
       }
 
       innerHTML += `
-      ${data.message.replace(/\n/g, '<br />')}</div>
+      ${linkifyAndEmbed(data.message.replace(/\n/g, '<br />'))}
+        </div>
         <footer></footer>
         <div class="tags hidden">
           ${eTagString}
