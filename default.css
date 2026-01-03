@@ -612,6 +612,10 @@ body {
             .caption {
               flex-grow: 1;
 
+              img {
+                max-width: 100%;
+              }
+
               .context {
                 border-left: 2px solid #000;
                 padding-left: 5px;
