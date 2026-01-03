@@ -636,6 +636,30 @@ function displayToast(parent, data, note, params) {
     div.classList.add('highlight');
   }
 
+
+  // If we're looking at an alert on the alerts page, we need a jump-to-context button
+  if (params.mode == "alerts") {
+    const expand = document.createElement('a');
+    expand.innerHTML = '<img src="expand.svg" alt="View Context" />';
+
+    expand.onclick = function(event) {
+      event.preventDefault();
+
+      document.getElementById('search-bar').value = hash;
+      searchResults(document.getElementById('search-bar').value);
+
+      location.hash = '#' + hash;
+
+      Array.from(document.querySelectorAll('.highlight')).forEach(
+        (el) => el.classList.remove('highlight')
+      );
+
+      div.classList.add('highlight');
+    }
+    div.querySelector('footer').prepend(expand)
+  }
+
+
   const reply = document.createElement('a');
   reply.innerHTML = '<img src="reply.svg" alt="Reply" />';
 
