@@ -2,6 +2,7 @@ window.mode = "YakClub";
 var users = {};
 window.pool = null;
 window.version = 6;
+window.settings = 0;
 window.hasFinishedLoading = false;
 var pubKey;
 var snd = new Audio("/pop.mp3");
@@ -67,14 +68,30 @@ function exportSettings() {
     }
   }
 
+  // TODO: dump this into an encrypted note
+  var e = {created_at: Math.floor(Date.now() / 1000), kind: 30078, tags: [['d', window.mode]], content: JSON.stringify(settings)};
   console.log(JSON.stringify(settings));
-  return JSON.stringify(settings);
 
-  // TODO: dump this into an encrypted Nostr note, sign it, and upload it
+  if (typeof window.nostr !== 'undefined') {
+    // NIP07 supported
+    window.nostr.signEvent(e).then(note => {
+      console.log("signed note via nip07: " + note);
+      uploadNote(null, note, null);
+    })
+  } else {
+    // NIP07 unsupported
+    var note = window.NostrTools.finalizeEvent(e, Uint8Array.from(window.NostrTools.nip19.decode(localStorage.getItem('privkey')).data))
+    console.log("signed note without nip07: " + note);
+    uploadNote(null, note, null);
+  }
 }
 
-function importSettings(settings) {
-  settings = JSON.parse(settings);
+function importSettings(note) {
+  settings = JSON.parse(JSON.parse(note)['content']);
+  created_at = JSON.parse(note)['created_at'];
+
+  console.log('attempting to import settings: ');
+  console.log(settings);
 
   if (window.mode == "YakClub") {
     // This currently only imports favourites and alerts
@@ -111,9 +128,14 @@ function importSettings(settings) {
       }
     });
 
-
   }
   // TODO: redraw UI so that the settings that were imported are actually visible
+
+  // We don't want to re-import the settings we just exported, so we make sure the app thinks
+  // the current settings are newer by adding 1 to the timestamp
+  window.localStorage.setItem("settings", JSON.stringify(created_at + 1));
+  window.settings = note['created_at'] + 1;
+
   syncDatabase();
 }
 
@@ -395,7 +417,6 @@ function newNoteSubmit(event) {
 }
 
 function uploadNote(data, note, parent) {
-  window.data = data;
   console.log("Sending " + JSON.stringify(note));
   Promise.any(window.pool.publish(relays, note)).then(relay => {
     // When we upload a note, normally we'd have to keep track of state.
@@ -431,14 +452,16 @@ function uploadNote(data, note, parent) {
       searchResults(document.getElementById('search-bar').value);
     } else if (window.mode == "YakClub") {
       searchResults(document.getElementById('search-bar').value);
-      if (!isToast)  {
+      if (!isToast && note["kind"] != 30078)  {
         window.scrollTo({
           top: document.body.scrollHeight,
           behavior: 'smooth'
         });
       }
     }
-    data.reset();
+    if (data) {
+      data.reset();
+    }
   });
 }
 //TODO: remove users
@@ -843,9 +866,11 @@ initSqlJs(config).then(function(SQL){
       dirty = true;
       console.log('Adding ' + value['id'] + ' to notes');
     } else if (value['kind'] == 30078 && value["pubkey"] == window.pubKey) { // NIP-78 - arbitrary custom app data
-      var existing_timestamp = null;
+      var existing_timestamp = 0;
 
-      var stmt = db.prepare("SELECT * FROM notes WHERE pubkey = ? AND kind = 30078", [window.pubkey]);
+      var stmt = db.prepare("SELECT * FROM notes WHERE pubkey = $pubkey AND kind = 30078");
+      stmt.bind({$pubkey: window.pubKey});
+
       while(stmt.step()) {
         const row = stmt.getAsObject();
         var existing_timestamp = row.created_at;
@@ -859,18 +884,25 @@ initSqlJs(config).then(function(SQL){
       });
 
       if (okayToImport) {
-        if (existing_timestamp === null) {
+        if (existing_timestamp === 0) {
           console.log('Inserting ' + value['id'] + ' into Notes DB...');
           db.run("INSERT INTO notes (id, created_at, pubkey, kind, note) VALUES (?, ?, ?, ?, ?)", [value['id'], value['created_at'], value['pubkey'], value['kind'], note]);
           dirty = true;
         } else if (existing_timestamp < value['created_at']) {
           console.log('Updating ' + value['id'] + ' into Notes DB...');
-          db.run("UPDATE notes SET id = ?, created_at = ?, kind = ?, note = ? WHERE pubkey = ? AND created_at < ? AND kind = 30078)", [value['id'], value['created_at'], value['kind'], note, value['pubkey'], value['created_at']]);
+          db.run("UPDATE notes SET id = ?, created_at = ?, kind = ?, note = ? WHERE pubkey = ? AND created_at < ? AND kind = 30078", [value['id'], value['created_at'], value['kind'], note, value['pubkey'], value['created_at']]);
           dirty = true;
+        } else {
+          console.log('not importing settings - this event is older than ' + existing_timestamp)
         }
         if (dirty) {
           // Parse the settings inside the note, and import them into the DB
-          importSettings(note);
+          if (value['created_at'] < JSON.parse(window.localStorage.getItem("settings"))) {
+            console.log('importing setting - time delta = ' + JSON.parse(window.localStorage.getItem("settings")) - value['created_at'])
+            importSettings(note);
+          } else {
+            console.log('not importing settings older than the currently applied set');
+          }
         }
       }
     } else {
@@ -899,6 +931,7 @@ initSqlJs(config).then(function(SQL){
   var dbstr = toBinString(db.export());
   window.localStorage.setItem(window.mode + ".sqlite", dbstr);
   window.localStorage.setItem("version", window.version);
+  window.localStorage.setItem("settings", JSON.stringify(0));
   window.db = db;
 
   if (typeof browser !== "undefined" && typeof browser.tabs !== "undefined") {
@@ -1200,13 +1233,12 @@ initSqlJs(config).then(function(SQL){
       var toast = stmt.getAsObject();
       window.db.run("UPDATE toasts SET favourite = ? WHERE id = ?", [!toast.favourite, id]);
     }
-
     syncDatabase();
+    exportSettings();
   }
 
   function markToastAsRead(id) {
     window.db.run("UPDATE toasts SET read_at = ? WHERE id = ?", [Math.floor(Date.now() / 1000), window.NostrTools.nip19.decode(id)["data"]]);
-
     syncDatabase();
   }
 
