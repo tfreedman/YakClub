@@ -508,7 +508,6 @@ function displayToast(parent, data, note, params) {
     }
   }
 
-
   if (root) {
     hash = window.NostrTools.nip19.noteEncode(root) + "-" + window.NostrTools.nip19.noteEncode(note["id"]);
   } else {
@@ -573,6 +572,12 @@ function displayToast(parent, data, note, params) {
     `
   }
 
+  if (params.read && params.read == false) {
+    div.classList.add('unread');
+  } else if (params.read && params.read == true) {
+    div.classList.add('read')
+  }
+
   var author = null;
 
   if (showUser == '') {
@@ -588,12 +593,17 @@ function displayToast(parent, data, note, params) {
             <div class="details">
               <span class="username">${data.username}</span>
             </div>
-            <div class="pubkey">${window.NostrTools.nip19.npubEncode(data.pubkey)}</div> 
-            <div class="read">${params.read}</div>
+            <div class="pubkey">${window.NostrTools.nip19.npubEncode(data.pubkey)}</div>
           </header>
         </div>
       </div>
     `
+
+    if (params.read && params.read == false) {
+      author.classList.add('unread');
+    } else if (params.read && params.read == true) {
+      author.classList.add('read')
+    }
   }
 
   var innerHTML = `
