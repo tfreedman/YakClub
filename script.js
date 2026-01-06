@@ -1500,7 +1500,7 @@ initSqlJs(config).then(function(SQL){
         pageTitle = 'Channel' + ' ' + channelName;
         emptyMsg = "Sorry, there are no notes corresponding to " + mode.substring(6) + ' (' + id + ')';
       }
-      pageSubTitle = mode.substring(6);
+      pageSubTitle = mode.substring(6).split('-')[0];
 
     } else if (mode.startsWith("replies-")) {
       shouldShowHeadings = false;
