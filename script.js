@@ -873,6 +873,12 @@ initSqlJs(config).then(function(SQL){
       // Update the room's timestamp on each message received
       db.run("UPDATE toasts SET created_at = MAX(created_at, ?) WHERE id = ?", [value['created_at'], parent]);
 
+      // Mark a room as read if the message we just received came from us
+      if (value['pubkey'] == window.pubKey) {
+        console.log('updating read indicator of ' + parent + ' to ' + value['created_at']);
+        db.run("UPDATE toasts SET read_at = MAX(read_at, ?) WHERE id = ?", [value['created_at'], parent]);
+      }
+
       dirty = true;
       console.log('Adding ' + value['id'] + ' to notes');
     } else if (value['kind'] == 30078 && value["pubkey"] == window.pubKey) { // NIP-78 - arbitrary custom app data
@@ -1639,7 +1645,7 @@ initSqlJs(config).then(function(SQL){
           article.classList.add('toast');
 
           // We don't care when a room was created - instead, we're storing the last message's timestamp in there.
-          var isUnread = row.created_at >= row.read_at;
+          var isUnread = row.created_at > row.read_at;
 
           if (isUnread) {
             article.classList.add('unread');
