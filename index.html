@@ -131,16 +131,18 @@
 
           <h2>Yak Club</h2>
           <div class="about">
-            <p>Yak Club is a decentralized Nostr app that lets you instant message on any website, using the Nostr protocol. Yak Club is available at <a href="https://yak.club">Yak.club</a> - it's also available as a browser extension <a href="#">here</a>. The browser extension functions identically to the website, but lets you instantly click the extension to see messages for the site you're currently on. The icon lights up automatically when you're on a website with existing messages.</p>
+            <p>Yak Club is a decentralized Nostr app that lets you chat with others using the Nostr protocol. Yak Club is available at <a href="https://yak.club">Yak.club</a> - it's also available as a browser extension <a href="#">here</a>. The browser extension functions identically to the website, but lets you instantly click the extension to see messages for the site you're currently on (if a room exists that matches the current domain name). The icon lights up automatically when you're on a website with existing messages.</p>
 
             <p>For privacy reasons, Yak Club scrapes all known channels from the relays you're connected to, stores them in your browser, and then filters based on the exact domain you're looking at to avoid leaking search queries or your browser history.</p>
           </div>
 
           <h2>Channels</h2>
           <div class="about">
-            <p>A channel is defined as a kind 40 event, with tags <em>['r', &lt;domain&gt;], ['t', 'yakclub']</em>. Due to <a href="https://github.com/nostr-protocol/nips/issues/523">limitations in the Nostr protocol</a>, all channels must be explicitly tagged yak club at this time. Responses to channels are currently implemented as kind 42 events.</p>
+            <p>A channel is defined as a kind 40 event, with tags <em>['r', &lt;room name&gt;], ['t', 'yakclub']</em>. Responses to channels are currently implemented as kind 42 events.</p>
 
             <p>Yak Club implements NIP-07. However, <em>browser extensions cannot interact with other browser extensions</em>, so the extension version of Yak Club requires your nsec / preferred nostr relays in order to work. This limitation does not apply to the web version, which is compatible with extensions like nos2x.</p>
+
+            <p>Yak Club does not currently implement encrypted messaging, so user <-> user chats aren't currently supported. Assume all messages are public.</p>
           </div>
 
         </article>
