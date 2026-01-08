@@ -68,18 +68,21 @@ function exportSettings() {
     }
   }
 
-  // TODO: dump this into an encrypted note
-  var e = {created_at: Math.floor(Date.now() / 1000), kind: 30078, tags: [['d', window.mode]], content: JSON.stringify(settings)};
   console.log(JSON.stringify(settings));
-
   if (typeof window.nostr !== 'undefined') {
     // NIP07 supported
-    window.nostr.signEvent(e).then(note => {
-      console.log("signed note via nip07: " + note);
-      uploadNote(null, note, null);
+    window.nostr.nip44.encrypt(window.pubKey, JSON.stringify(settings)).then(ciphertext => {
+      var e = {created_at: Math.floor(Date.now() / 1000), kind: 30078, tags: [['d', window.mode]], content: ciphertext};
+      window.nostr.signEvent(e).then(note => {
+        console.log("signed note via nip07: " + note);
+        uploadNote(null, note, null);
+      })
     })
   } else {
     // NIP07 unsupported
+    var convoKey = window.NostrTools.nip44.getConversationKey(window.NostrTools.nip19.decode(localStorage.getItem('privkey')).data, window.pubKey);
+    var ciphertext = window.NostrTools.nip44.v2.encrypt(JSON.stringify(settings), convoKey, randomBytes(32));
+    var e = {created_at: Math.floor(Date.now() / 1000), kind: 30078, tags: [['d', window.mode]], content: ciphertext};
     var note = window.NostrTools.finalizeEvent(e, Uint8Array.from(window.NostrTools.nip19.decode(localStorage.getItem('privkey')).data))
     console.log("signed note without nip07: " + note);
     uploadNote(null, note, null);
@@ -87,6 +90,7 @@ function exportSettings() {
 }
 
 function importSettings(note) {
+  // This function imports a plaintext note. If you have an encrypted note, it has to be decrypted upstream.
   settings = JSON.parse(JSON.parse(note)['content']);
   created_at = JSON.parse(note)['created_at'];
 
@@ -915,7 +919,21 @@ initSqlJs(config).then(function(SQL){
           // Parse the settings inside the note, and import them into the DB
           if (value['created_at'] < JSON.parse(window.localStorage.getItem("settings"))) {
             console.log('importing setting - time delta = ' + JSON.parse(window.localStorage.getItem("settings")) - value['created_at'])
-            importSettings(note);
+
+            // Notes are encrypted using NIP-44. We need to first decrypt it, then parse it.
+            if (typeof window.nostr !== 'undefined') {
+              // NIP07 supported
+              window.nostr.nip44.decrypt(window.pubKey, value['content']).then(plaintext => {
+                value['content'] = plaintext;
+                importSettings(JSON.stringify(value));
+              })
+            } else {
+              // NIP07 unsupported
+              var convoKey = window.NostrTools.nip44.getConversationKey(window.NostrTools.nip19.decode(localStorage.getItem('privkey')).data, window.pubKey);
+              var plaintext = window.NostrTools.nip44.v2.decrypt(value['content'], convoKey);
+              value['content'] = plaintext;
+              importSettings(JSON.stringify(value));
+            }
           } else {
             console.log('not importing settings older than the currently applied set');
           }
@@ -2027,3 +2045,10 @@ document.querySelectorAll('#topbar nav .right > a').forEach(link => {
     return false;
   });
 });
+
+function randomBytes(bytesLength = 32) {
+  if (crypto && typeof crypto.getRandomValues === "function") {
+    return crypto.getRandomValues(new Uint8Array(bytesLength));
+  }
+  throw new Error("crypto.getRandomValues must be defined");
+}
