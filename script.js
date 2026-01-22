@@ -248,6 +248,11 @@ function displayRelays(relays) {
   document.querySelector('#settings .relays').innerHTML = div.innerHTML;
 }
 
+function updateKeys() {
+  updateProfile(); // dunno why this was here originally, but let's not break it for now
+}
+
+
 function displayProfile(pubKey) {
   if (pubKey !== undefined) {
     window.pubKey = pubKey;
@@ -256,7 +261,7 @@ function displayProfile(pubKey) {
     document.querySelector('#keys input[name="npub"]').value = window.NostrTools.nip19.npubEncode(pubKey);
     document.querySelector('#keys input[name="npub"]').disabled = true;
 
-    document.querySelector('#keys button').addEventListener('click', updateProfile);
+    document.querySelector('#keys button').addEventListener('click', updateKeys);
     document.querySelector('#profile button').addEventListener('click', updateProfile);
 
     if (window.users[pubKey] !== undefined) {
@@ -1156,6 +1161,7 @@ initSqlJs(config).then(function(SQL){
   }
 
   const searchBar = document.getElementById('search-bar');
+  searchBar.value = 'note1ggqp6z236003r40m253j27xy8ptzal0c83lxte8m82unt6ln38qqreegpr'; // open directly into yak.club
   window.searchResults = (searchValue) => {
     var mode = '';
     if (!searchValue || searchValue == "" || searchValue == "https://" || searchValue == "http://") {
@@ -2019,7 +2025,7 @@ innerHTML += `<button type="submit" class="toast-submit-button">${submitText}</b
            innerHTML += `
               <textarea type="text" name="message" placeholder="Send a message..." required minlength="1" onkeydown="validateToast(event, 2)"></textarea>
             </div>
-            <button type="submit" class="toast-submit-button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640"><!--!Font Awesome Free v7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.--><path d="M268.2 82.4C280.2 87.4 288 99 288 112L288 192L400 192C497.2 192 576 270.8 576 368C576 481.3 494.5 531.9 475.8 542.1C473.3 543.5 470.5 544 467.7 544C456.8 544 448 535.1 448 524.3C448 516.8 452.3 509.9 457.8 504.8C467.2 496 480 478.4 480 448.1C480 395.1 437 352.1 384 352.1L288 352.1L288 432.1C288 445 280.2 456.7 268.2 461.7C256.2 466.7 242.5 463.9 233.3 454.8L73.3 294.8C60.8 282.3 60.8 262 73.3 249.5L233.3 89.5C242.5 80.3 256.2 77.6 268.2 82.6z"/></svg> Reply</button>
+            <button type="submit" class="toast-submit-button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--!Font Awesome Free v7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2026 Fonticons, Inc.--><path d="M536.4-26.3c9.8-3.5 20.6-1 28 6.3s9.8 18.2 6.3 28l-178 496.9c-5 13.9-18.1 23.1-32.8 23.1-14.2 0-27-8.6-32.3-21.7l-64.2-158c-4.5-11-2.5-23.6 5.2-32.6l94.5-112.4c5.1-6.1 4.7-15-.9-20.6s-14.6-6-20.6-.9L229.2 276.1c-9.1 7.6-21.6 9.6-32.6 5.2L38.1 216.8c-13.1-5.3-21.7-18.1-21.7-32.3 0-14.7 9.2-27.8 23.1-32.8l496.9-178z"/></svg> Send</button>
           </form>
         </div>
       </div>
