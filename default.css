@@ -541,6 +541,9 @@ body {
 
                 .avatar {
                   width: 20px !important;
+                  min-height: 20px;
+                  min-width: 20px;
+                  border: 1px solid #FFF;
                   object-fit: cover;
                   border-radius: 20px;
                   overflow: hidden;
@@ -639,7 +642,7 @@ body {
                   overflow: hidden;
                   height: 20px;
                   width: 20px;
-                  border: 0;
+                  border: 1px solid #FFF;
                   min-width: 20px;
                   margin-right: 0;
                   display: inline-block;
