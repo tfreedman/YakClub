@@ -335,7 +335,7 @@ body {
     form:valid button, button.valid {
       background: #fb64b6;
       color: #fff;
-      svg {fill: #fff; width: 18px; vertical-align: middle}
+      svg {fill: #fff; width: 18px; height: 18px; vertical-align: middle}
       &:hover {background: #fb64b6; color: #fff; svg {fill: #fff}}
       &:active {background: #cc5295}
     }
