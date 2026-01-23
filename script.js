@@ -248,10 +248,38 @@ function displayRelays(relays) {
   document.querySelector('#settings .relays').innerHTML = div.innerHTML;
 }
 
-function updateKeys() {
+function editKeys() {
   updateProfile(); // dunno why this was here originally, but let's not break it for now
+  document.querySelector('#keys .edit-container').style.display = 'none'
+  document.querySelector('#keys .submit-container').style.display = 'block';
+  document.querySelector('#keys input[name="privkey"]').disabled = false;
 }
 
+function cancelUpdateKeys() {
+  sk = Uint8Array.from(window.NostrTools.nip19.decode(localStorage.getItem('privkey')).data);
+  document.querySelector('#keys input[name="privkey"]').value = localStorage.getItem('privkey');
+  document.querySelector('#keys input[name="privkey"]').disabled = true;
+  document.querySelector('#keys .edit-container').style.display = 'block'
+  document.querySelector('#keys .submit-container').style.display = 'none';
+}
+
+function updateKeys() {
+  try { // Basic validation - if we can generate an npub from the input, it's a valid key
+    if (window.NostrTools.nip19.decode(document.querySelector('#keys input[name="privkey"]').value).data) {
+      localStorage.setItem("privkey", document.querySelector('#keys input[name="privkey"]').value);
+      window.localStorage.setItem("version", 0); // This will mismatch with the existing DB version, causing it to be blown away on reload
+      document.querySelector('#keys .edit-container').style.display = 'block'
+      document.querySelector('#keys .submit-container').style.display = 'none';
+      window.location.reload();
+    }
+  } catch (e) {
+    alert('Invalid nsec');
+  }
+}
+
+document.querySelector('#keys .edit').addEventListener('click', editKeys);
+document.querySelector('#keys .cancel').addEventListener('click', cancelUpdateKeys);
+document.querySelector('#keys .update').addEventListener('click', updateKeys);
 
 function displayProfile(pubKey) {
   if (pubKey !== undefined) {
@@ -261,7 +289,6 @@ function displayProfile(pubKey) {
     document.querySelector('#keys input[name="npub"]').value = window.NostrTools.nip19.npubEncode(pubKey);
     document.querySelector('#keys input[name="npub"]').disabled = true;
 
-    document.querySelector('#keys button').addEventListener('click', updateKeys);
     document.querySelector('#profile button').addEventListener('click', updateProfile);
 
     if (window.users[pubKey] !== undefined) {
@@ -1869,10 +1896,8 @@ initSqlJs(config).then(function(SQL){
     }
 
     if (pageTitle !== undefined) {
-      if (pageTitle !== undefined) {
-        document.querySelector('h1#title').innerHTML = pageTitle;
-        document.title = 'Yak Club - ' + pageTitle;
-      }
+      document.querySelector('h1#title').innerHTML = pageTitle;
+      document.title = 'Yak Club - ' + pageTitle;
 
       if (pageSubTitle !== undefined) {
         document.querySelector('h2#subtitle').innerHTML = pageSubTitle;

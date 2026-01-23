@@ -352,6 +352,8 @@ body {
           width: 100%;
           button {float: right}
 
+          .submit-container {display: none}
+
           .field {
             display: flex;
             flex-direction: column;
