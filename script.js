@@ -1039,6 +1039,7 @@ initSqlJs(config).then(function(SQL){
     // Detected NIP-07 support
     document.querySelector('#keys input[name="privkey"]').value = "NIP-07 supported - using browser keys";
     document.querySelector('#keys input[name="privkey"]').disabled = true;
+    document.querySelector('#keys .edit-container').style.display = 'none';
     window.nostr.getPublicKey().then(pubKey => {
       displayProfile(pubKey);
       return pubKey;
