@@ -93,6 +93,17 @@ body {
   h1, h2, h3, h4, h5, h6, .username, label, button {font-family: 'Fredoka'; font-weight: bold}
   input, textarea {font-family: 'Fredoka'}
 
+
+  #emoji-picker {
+    width: 352px;
+    height: 435px;
+    position: absolute;
+    bottom: 50px;
+    right: 50px;
+    z-index: 10;
+    visibility: hidden;
+  }
+
   #parent {
     /*    background-color: #b8e3f5;*/
     position: relative;
@@ -562,6 +573,13 @@ body {
                   }
                 }
               }
+            }
+
+            #show-emoji-picker-button {
+              width: 20px;
+              height: 20px;
+              display: block;
+              fill: #FFF;
             }
 
             input, textarea {
