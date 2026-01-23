@@ -904,6 +904,7 @@ initSqlJs(config).then(function(SQL){
 
       if (shouldAlert) {
         db.run("INSERT OR IGNORE INTO alerts (id, created_at, pubkey, note, read) VALUES (?, ?, ?, ?, ?)", [value['id'], value['created_at'], value['pubkey'], note, false]);
+        updateAlertsIndicator();
       }
 
       // Update the room's timestamp on each message received
@@ -1138,9 +1139,6 @@ initSqlJs(config).then(function(SQL){
             importNote(event, window.hasFinishedLoading); // if the page has finished loading, save the DB in response to any change.
 
             if (window.hasFinishedLoading) { // Trigger a redraw if this is after the initial load...
-              // Redraw the Alerts page - TODO: don't just duplicate recents...
-              drawToasts(document.querySelector('#alerts .toasts-container'), window.users, "alerts");
-
               if (document.getElementById('search-bar').value == "") { // If yes
                 drawToasts(document.querySelector('.toasts-container'), window.users, "recent");
                 window.lastDrawMode = "recent";
@@ -1244,6 +1242,10 @@ initSqlJs(config).then(function(SQL){
   var alertsLink = document.querySelector('a#alertsLink');
   alertsLink.onclick = function(event) {
     event.preventDefault();
+
+    // Draw first, then update the database to mark everything as read
+    drawToasts(document.querySelector('#alerts .toasts-container'), window.users, "alerts");
+
     var stmt = window.db.exec("UPDATE alerts SET read = true WHERE read = false");
 
     updateAlertsIndicator();
@@ -1361,11 +1363,10 @@ initSqlJs(config).then(function(SQL){
           }
           if (!window.hasFinishedLoading) {
             if (!window.browserExtension) {
+              updateAlertsIndicator(); // If there are new alerts, update the UI to show them
+
               // Draw the new toast UI
               newToast(document.querySelector('#newToastContainer'), {url: ''});
-
-              // Draw the Alerts page - TODO: don't just duplicate recents...
-              drawToasts(document.querySelector('#alerts .toasts-container'), window.users, "alerts");
 
               // Ready to draw page contents - has someone attempted a search (via the URL slug) ?
               if (window.location.hash) {
@@ -1398,8 +1399,6 @@ initSqlJs(config).then(function(SQL){
         alerts[row.id] = row.read;
       }
       window.alerts = alerts;
-
-      updateAlertsIndicator();
     }
 
     console.log("Drawing Toasts! - Mode = " + mode);
