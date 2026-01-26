@@ -1122,7 +1122,6 @@ initSqlJs(config).then(function(SQL){
           syncDatabase();
         }
         fetchNotes();
-        //h.close();
       }
     }
   )
@@ -1130,10 +1129,6 @@ initSqlJs(config).then(function(SQL){
   function fetchNotes() {
     var filters = [];
     var kind;
-
-
-    // TODO:REMOVE ME
-//    window.db.run("DELETE FROM alerts WHERE 1=1");
 
     if (window.mode == "Toastr") {
       var stmt = window.db.prepare("SELECT * FROM toasts WHERE kind = 1");
@@ -1203,8 +1198,6 @@ initSqlJs(config).then(function(SQL){
         oneose() {
           console.log('EOSE on notes/messages - Calling fetchAuthorInfo...');
           fetchAuthorInfo();
-
-          //h.close();
         }
       }
     )
@@ -1303,9 +1296,6 @@ initSqlJs(config).then(function(SQL){
   }
 
   function updateAlertsIndicator() {
-    // TODO: right now, alerts are stored client-side. This isn't a big deal if you switch devices,
-    // because clicking the alert tab also clears all alerts, so the worst case scenario is clicking
-    // one link to catch up on things again. We should synchronize this eventually by signing a note.
     var alertsCount = db.exec("SELECT COUNT(*) FROM alerts WHERE read = false")[0].values[0][0];
 
     if (alertsCount >= 1) {
@@ -1318,9 +1308,6 @@ initSqlJs(config).then(function(SQL){
   }
 
   function toggleFavourite(id) {
-    // TODO: right now, favourites are stored client-side. This is more pressing than alert
-    // synchronization, because if you star 50 rooms you'd expect to see the same 50 on a
-    // different device, as opposed to zero. We should synchronize state by signing notes.
     var stmt = window.db.prepare("SELECT * FROM toasts WHERE id = $id");
     stmt.bind({$id: id});
     while(stmt.step()) {
@@ -1407,7 +1394,6 @@ initSqlJs(config).then(function(SQL){
             }
             window.hasFinishedLoading = true;
           }
-          //h.close();
         }
       }
     )
