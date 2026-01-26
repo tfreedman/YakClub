@@ -1376,6 +1376,11 @@ initSqlJs(config).then(function(SQL){
           }
           if (!window.hasFinishedLoading) {
             if (!window.browserExtension) {
+              updateAlertsIndicator(); // If there are new alerts, update the UI to show them
+              document.querySelectorAll('.post-boot').forEach((i) => {
+                i.classList.remove('post-boot');
+              });
+
               // Draw the new toast UI
               newToast(document.querySelector('#newToastContainer'), {url: ''});
 
@@ -1391,11 +1396,6 @@ initSqlJs(config).then(function(SQL){
               } else { // If no.
                 searchResults(document.getElementById('search-bar').value);
               }
-
-              document.querySelectorAll('.post-boot').forEach((i) => {
-                i.classList.remove('post-boot');
-              });
-              updateAlertsIndicator(); // If there are new alerts, update the UI to show them
             }
 
             window.hasFinishedLoading = true;
