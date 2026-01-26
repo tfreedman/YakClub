@@ -237,7 +237,7 @@ body {
   }
 
   #container {
-    #settings, #about {max-width: 700px}
+    #settings *, #about * {max-width: 700px}
 
     #new .toast-close-button {display: none}
 
