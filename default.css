@@ -237,14 +237,6 @@ body {
   }
 
   #container {
-    width: 90%;
-    margin: 0 auto;
-    padding: 0 10px 50px 10px;
-    border-radius: 50px;
-    position: relative;
-    z-index: 2;
-    min-height: calc(90vh - 100px);
-
     #settings, #about {max-width: 700px}
 
     #new .toast-close-button {display: none}
@@ -259,6 +251,12 @@ body {
     }
 
     article {
+      padding: 0 10px 50px 10px;
+      min-height: calc(90vh - 100px);
+      margin: 0 auto;
+      width: 90%;
+
+
       & > h1:before {
         content: '✦';
         transform: rotate(15deg);
@@ -769,7 +767,7 @@ body {
 @media screen and (max-width: 1000px) {
   body {
     #topbar {width: 100%; padding: 0 10px}
-    #container {width: 100%}
+    #container > article {width: 100%}
   }
 }
 
