@@ -327,6 +327,11 @@ function displayProfile(pubKey) {
       }
       if (profile.picture !== undefined) {
         document.querySelector('#profile input[name="picture"]').value = profile.picture;
+        if (document.querySelector('#profile input[name="picture"]').value !== "") {
+          document.querySelector('#profile .avatar').src = document.querySelector('#profile input[name="picture"]').value
+        } else {
+          document.querySelector('#profile .avatar').src = 'circle-user.svg'
+        }
       }
       console.log(users[pubKey]);
     } else {

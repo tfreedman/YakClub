@@ -352,6 +352,19 @@ body {
     }
 
     #settings {
+      #profile .avatar {
+        object-fit: cover;
+        border-radius: 74px;
+        overflow: hidden;
+        height: 74px;
+        min-height: 74px;
+        min-width: 74px;
+        width: 74px;
+        border: 5px solid #FFF;
+        margin: 0 auto;
+        display: block;
+      }
+
       #profile, #relays, #keys {
         width: 300px;
         display: flex;
