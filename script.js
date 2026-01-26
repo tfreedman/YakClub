@@ -2078,7 +2078,9 @@ innerHTML += `<button type="submit" class="toast-submit-button">${submitText}</b
 
     const pickerOptions = { onEmojiSelect: function(e){document.querySelector('textarea').value += e.native; console.log(e);}, previewPosition: 'none'}
     const picker = new EmojiMart.Picker(pickerOptions)
-    document.querySelector('#emoji-picker').appendChild(picker)
+    if (document.querySelector('#emoji-picker').childNodes.length == 0) {
+      document.querySelector('#emoji-picker').appendChild(picker);
+    }
 
     div.innerHTML = innerHTML;
     node.append(div);
