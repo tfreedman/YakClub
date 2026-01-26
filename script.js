@@ -329,8 +329,10 @@ function displayProfile(pubKey) {
         document.querySelector('#profile input[name="picture"]').value = profile.picture;
         if (document.querySelector('#profile input[name="picture"]').value !== "") {
           document.querySelector('#profile .avatar').src = document.querySelector('#profile input[name="picture"]').value
+          document.querySelector('#topbar nav .avatar').src = document.querySelector('#profile input[name="picture"]').value
         } else {
           document.querySelector('#profile .avatar').src = 'circle-user.svg'
+          document.querySelector('#topbar nav .avatar').src = 'circle-user.svg'
         }
       }
       console.log(users[pubKey]);
@@ -1374,8 +1376,6 @@ initSqlJs(config).then(function(SQL){
           }
           if (!window.hasFinishedLoading) {
             if (!window.browserExtension) {
-              updateAlertsIndicator(); // If there are new alerts, update the UI to show them
-
               // Draw the new toast UI
               newToast(document.querySelector('#newToastContainer'), {url: ''});
 
@@ -1391,7 +1391,13 @@ initSqlJs(config).then(function(SQL){
               } else { // If no.
                 searchResults(document.getElementById('search-bar').value);
               }
+
+              document.querySelectorAll('.post-boot').forEach((i) => {
+                i.classList.remove('post-boot');
+              });
+              updateAlertsIndicator(); // If there are new alerts, update the UI to show them
             }
+
             window.hasFinishedLoading = true;
           }
         }

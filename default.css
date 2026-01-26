@@ -132,7 +132,10 @@ body {
     nav {
       display: flex;
 
-      a {display: inline-block}
+      a {
+        display: inline-block;
+        &.post-boot {display: none !important}
+      }
 
       .left {
         margin-right: auto;
@@ -160,7 +163,16 @@ body {
         a {
           margin: 10px;
 
-          svg {
+          .avatar {
+            object-fit: cover;
+            border-radius: 25px;
+            overflow: hidden;
+            min-height: 25px;
+            min-width: 25px;
+            border: 2px solid #FFF;
+          }
+
+          svg, .avatar {
             fill: #fff;
             width: 25px;
             height: 25px;
