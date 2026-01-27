@@ -350,13 +350,18 @@ body {
       border-radius: 20px;
       transition: all 0.5s;
 
-      svg {fill: #fb64b6}
+      svg {fill: #fb64b6; transition: all 0.5s}
+    }
+
+    form button, button {
+      svg {fill: #fb64b6; width: 18px; height: 18px; vertical-align: middle; color: #fb64b6}
     }
 
     form:valid button, button.valid {
       background: #fb64b6;
       color: #fff;
-      svg {fill: #fff; width: 18px; height: 18px; vertical-align: middle}
+      fill: #fff;
+      svg {fill: #fff}
       &:hover {background: #fb64b6; color: #fff; svg {fill: #fff}}
       &:active {background: #cc5295}
     }
@@ -617,7 +622,7 @@ body {
               cursor: pointer;
             }
 
-            input, textarea, .content-editable {
+            input, textarea {
               outline: none;
               padding: 14px;
               background: #fff;
@@ -631,12 +636,6 @@ body {
               color: #282a51;
               display: inline-block;
               resize: none;
-            }
-
-            [contenteditable=true]:empty:before {
-              content: attr(placeholder);
-              pointer-events: none;
-              color: #aaa;
             }
           }
 
