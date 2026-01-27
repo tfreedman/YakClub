@@ -2015,14 +2015,6 @@ innerHTML += `<button type="submit" class="toast-submit-button">${submitText}</b
 
   // New Messages
   function newNote(node, params) {
-    // Grab the profile picture URL from the settings box for the time being
-    var avatarURL;
-    if (document.querySelector('#profile input[name="picture"]').value !== "") {
-      avatarURL = document.querySelector('#profile input[name="picture"]').value
-    } else {
-      avatarURL = 'circle-user.svg'
-    }
-
     const div = document.createElement('div');
     div.classList.add('toast-new');
 
@@ -2038,7 +2030,6 @@ innerHTML += `<button type="submit" class="toast-submit-button">${submitText}</b
 
     var innerHTML = `
       <div>
-        <img class="avatar" src="${avatarURL}" />
         <div class="content">
           <form class="toast-new-form" autocomplete="off" onsubmit="newNoteSubmit(event)" action="">
             <div class="middle">
