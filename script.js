@@ -391,11 +391,27 @@ function uploadProfileEvent(note) {
   });
 }
 
+function resizeTextArea(event) {
+  console.log('resizing!');
+  event.target.style.height = '';
+  event.target.style.height = event.target.scrollHeight + 'px';
+}
+
+function placeholderSpan(event) {
+  // This is a stupid hack. If a div is editable and it is emptied,
+  // browsers will insert a <br>, which fails to trigger :empty CSS
+
+  if (event.target.innerHTML.trim() === '<br>') {
+    event.target.innerHTML = '';
+  }
+}
+
 function validateToast(event, depth) {
   if (depth == 1) {
     var data = event.target.parentElement;
   } else {
     var data = event.target.parentElement.parentElement;
+    placeholderSpan(event);
   }
 
   if (window.mode == "Toastr") {
@@ -403,6 +419,14 @@ function validateToast(event, depth) {
   } else if (window.mode == "YakClub") {
     if (event.key === "Enter" && !event.shiftKey) {
       event.preventDefault();
+
+      // We have to manually check if the text area is valid, because it's a span
+      // and required/minlength don't apply to spans.
+
+      if (data.querySelector('.content-editable').innerHTML.length < 1) {
+        return false;
+      }
+
       if (data.checkValidity()) {
         data.requestSubmit();
       }
@@ -461,7 +485,8 @@ function newNoteSubmit(event) {
       tags.push(['e', el.dataset.eventId, el.dataset.relayUrl, el.dataset.marker, el.dataset.pubkey]);
     });
     console.log('tags: ' + tags);
-    var e = {created_at: Math.floor(Date.now() / 1000), kind: 42, tags: tags, content: data.message.value};
+    var content = data.querySelector('.message').textContent;
+    var e = {created_at: Math.floor(Date.now() / 1000), kind: 42, tags: tags, content: content};
   }
 
   if (typeof window.nostr !== 'undefined') {
@@ -522,7 +547,9 @@ function uploadNote(data, note, parent) {
       }
     }
     if (data) {
+      data.querySelector('.message').innerHTML = "";
       data.reset();
+      data.querySelector('.message').focus();
     }
   });
 }
@@ -759,7 +786,6 @@ function displayToast(parent, data, note, params) {
   reply.innerHTML = '<img src="reply.svg" alt="Reply" />';
 
   reply.onclick = function() {
-    window.foo = this;
     if (window.mode == "Toastr") {
       var form = this.parentElement.parentElement.parentElement.nextSibling.querySelector('& > .toast-new');
     } else if (window.mode == "YakClub") {
@@ -2055,7 +2081,8 @@ innerHTML += `<button type="submit" class="toast-submit-button">${submitText}</b
               })
 
            innerHTML += `
-              <textarea type="text" name="message" placeholder="Send a message..." required minlength="1" onkeydown="validateToast(event, 2)"></textarea>
+              <textarea required minlength="1" name="message" placeholder="Send a message..." oninput="resizeTextArea(event)" onkeydown="validateToast(event, 2)"></textarea>
+              <span style="display: none" contenteditable="true" class="content-editable message" placeholder="Send a message..." onkeydown="validateToast(event, 2)" onfocusout="placeholderSpan(event)"></span>
               <a id="show-emoji-picker-button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free v7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2026 Fonticons, Inc.--><path d="M464 256a208 208 0 1 0 -416 0 208 208 0 1 0 416 0zM0 256a256 256 0 1 1 512 0 256 256 0 1 1 -512 0zm177.3 63.4C192.3 335 218.4 352 256 352s63.7-17 78.7-32.6c9.2-9.6 24.4-9.9 33.9-.7s9.9 24.4 .7 33.9c-22.1 23-60 47.4-113.3 47.4s-91.2-24.4-113.3-47.4c-9.2-9.6-8.9-24.8 .7-33.9s24.8-8.9 33.9 .7zM144 208a32 32 0 1 1 64 0 32 32 0 1 1 -64 0zm192-32a32 32 0 1 1 0 64 32 32 0 1 1 0-64z"/></svg></a>
             </div>
             <button type="submit" class="toast-submit-button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--!Font Awesome Free v7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2026 Fonticons, Inc.--><path d="M536.4-26.3c9.8-3.5 20.6-1 28 6.3s9.8 18.2 6.3 28l-178 496.9c-5 13.9-18.1 23.1-32.8 23.1-14.2 0-27-8.6-32.3-21.7l-64.2-158c-4.5-11-2.5-23.6 5.2-32.6l94.5-112.4c5.1-6.1 4.7-15-.9-20.6s-14.6-6-20.6-.9L229.2 276.1c-9.1 7.6-21.6 9.6-32.6 5.2L38.1 216.8c-13.1-5.3-21.7-18.1-21.7-32.3 0-14.7 9.2-27.8 23.1-32.8l496.9-178z"/></svg> Send</button>
@@ -2064,7 +2091,7 @@ innerHTML += `<button type="submit" class="toast-submit-button">${submitText}</b
       </div>
     `
 
-    const pickerOptions = { onEmojiSelect: function(e){document.querySelector('textarea').value += e.native; console.log(e);}, previewPosition: 'none'}
+    const pickerOptions = { onEmojiSelect: function(e){document.querySelector('.toast-new-form .content-editable').innerHTML += e.native; console.log(e);}, previewPosition: 'none'}
     const picker = new EmojiMart.Picker(pickerOptions)
     if (document.querySelector('#emoji-picker').childNodes.length == 0) {
       document.querySelector('#emoji-picker').appendChild(picker);

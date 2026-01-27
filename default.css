@@ -548,6 +548,9 @@ body {
 
             .middle {
               flex: 1;
+              padding: 10px;
+              background: #fff;
+              border-radius: 20px;
             }
 
             .reply-details {
@@ -576,6 +579,13 @@ body {
                 .username {font-weight: bold}
                 .pubkey {color: #999}
 
+                .content {
+                  img, iframe {
+                    max-width: min(50px, 100%);
+                    max-height: min(50px, 100%);
+                  }
+                }
+
                 .avatar {
                   width: 20px !important;
                   min-height: 20px;
@@ -599,26 +609,34 @@ body {
             }
 
             #show-emoji-picker-button {
-              width: 20px;
-              height: 20px;
-              display: block;
-              fill: #FFF;
+              width: 30px;
+              height: 30px;
+              display: inline-block;
+              vertical-align: middle;
+              fill: #AAA;
+              cursor: pointer;
             }
 
-            input, textarea {
-              font-size: 14px;
-              resize: vertical;
-              width: 100%;
-              height: auto;
-              overflow: hidden;
-              max-width: 100%;
-              border: none;
-              padding: 10px;
-              border: 10px solid #fff;
+            input, textarea, .content-editable {
+              outline: none;
+              padding: 14px;
               background: #fff;
               border-radius: 20px;
+              vertical-align: middle;
+              font-size: 14px;
+              width: calc(100% - 40px);
+              overflow: hidden;
+              max-width: calc(100% - 40px);
+              border: none;
               color: #282a51;
-              flex: 1;
+              display: inline-block;
+              resize: none;
+            }
+
+            [contenteditable=true]:empty:before {
+              content: attr(placeholder);
+              pointer-events: none;
+              color: #aaa;
             }
           }
 
