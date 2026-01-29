@@ -1254,13 +1254,16 @@ initSqlJs(config).then(function(SQL){
     window.lastDrawMode = mode;
   };
 
-  var logoLink = document.querySelector('a#logoLink');
-  logoLink.onclick = function(event) {
+  var loadHome = function(event) {
     event.preventDefault();
     history.pushState({hash: ''}, "Home", '#' + '');
     document.getElementById('search-bar').value = '';
     searchResults(document.getElementById('search-bar').value);
   }
+
+  document.querySelectorAll('a#logoLink, #backBtn').forEach(el => {
+    el.addEventListener('click', event => loadHome(event))
+  });
 
   var alertsLink = document.querySelector('a#alertsLink');
   alertsLink.onclick = function(event) {
@@ -1448,6 +1451,7 @@ initSqlJs(config).then(function(SQL){
     var pageSubTitle;
     var shouldShowHeadings = false;
     var shouldShowMessages = false;
+    var shouldShowBackButton = false;
     var showEmptyMessage = true;
     var showFilters = false;
 
@@ -1578,6 +1582,7 @@ initSqlJs(config).then(function(SQL){
         emptyMsg = "Sorry, there are no notes corresponding to " + mode.substring(6) + ' (' + id + ')';
       }
       pageSubTitle = mode.substring(6).split('-')[0];
+      shouldShowBackButton = true;
 
     } else if (mode.startsWith("replies-")) {
       shouldShowHeadings = false;
@@ -1924,6 +1929,12 @@ initSqlJs(config).then(function(SQL){
       } else {
         document.querySelector('h2#subtitle').innerHTML = '';
       }
+    }
+
+    if (shouldShowBackButton) {
+      document.querySelector('#backBtn').style.display = 'inline-block';
+    } else {
+      document.querySelector('#backBtn').style.display = 'none';
     }
 
     try {

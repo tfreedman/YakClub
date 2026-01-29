@@ -251,6 +251,9 @@ body {
   }
 
   #container {
+    position: relative;
+    z-index: 2;
+
     #settings *, #about * {max-width: 700px}
 
     #new .toast-close-button {display: none}
@@ -314,7 +317,7 @@ body {
       }
 
       & > h2:first-of-type {
-        margin-left: 25px;
+        margin-left: 110px;
         font-size: 16px;
         padding-bottom: 30px;
         font-weight: normal;
@@ -437,6 +440,23 @@ body {
       & > .toasts-container > .toasts > .children {
         margin-left: 0;
       }
+
+      #backBtn {
+        width: 50px;
+        height: 50px;
+        display: none;
+        vertical-align: middle;
+        margin-right: 20px;
+        cursor: pointer;
+        margin-top: -20px;
+
+        svg {
+          width: 50px;
+          height: 50px;
+          fill: #FFF;
+        }
+      }
+
       .toasts .favourites {font-size: 24px; cursor: pointer}
       .toasts .favourites + h2 {display: inline}
 
