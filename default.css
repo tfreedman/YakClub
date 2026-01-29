@@ -163,6 +163,8 @@ body {
         a {
           margin: 10px;
 
+          &:last-of-type{margin-right: 0}
+
           .avatar {
             object-fit: cover;
             border-radius: 25px;
@@ -349,8 +351,10 @@ body {
       background: #fff;
       border-radius: 20px;
       transition: all 0.5s;
+      margin-right: 10px;
 
       svg {fill: #fb64b6; transition: all 0.5s}
+      &:first-of-type {margin-right: 0}
     }
 
     form button, button {
@@ -620,6 +624,10 @@ body {
               vertical-align: middle;
               fill: #AAA;
               cursor: pointer;
+
+              @media screen and (max-width: 660px) {
+                display: none;
+              }
             }
 
             input, textarea {
@@ -636,6 +644,11 @@ body {
               color: #282a51;
               display: inline-block;
               resize: none;
+
+              @media screen and (max-width: 660px) {
+                width: 100%;
+                max-width: 100%;
+              }
             }
           }
 
