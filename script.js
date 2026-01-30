@@ -676,7 +676,7 @@ function displayToast(parent, data, note, params) {
   var innerHTML = `
     <div>
       <div class="content">
-        <div class="created_at" style="${showTime}"><time datetime="${epoch_timestamp}"><div class="tooltip">${epochTimestamp.toUTCString()}</div>${(epochTimestamp.getHours() < 10 ? '0' : '') + epochTimestamp.getHours()}:${(epochTimestamp.getMinutes() < 10 ? '0' : '') + epochTimestamp.getMinutes()}</time></div>
+        <div class="created_at" style="${showTime}"><time data-tippy="${epochTimestamp.toUTCString()}" datetime="${epoch_timestamp}">${(epochTimestamp.getHours() < 10 ? '0' : '') + epochTimestamp.getHours()}:${(epochTimestamp.getMinutes() < 10 ? '0' : '') + epochTimestamp.getMinutes()}</time></div>
         <div class="caption">`
 
       if (isReply && referencedNote !== undefined) {
@@ -721,8 +721,16 @@ function displayToast(parent, data, note, params) {
 
   div.innerHTML = innerHTML;
 
+  tippy('time', {
+    content: (reference) => reference.dataset.tippy
+  });
+
   const permalink = document.createElement('a');
   permalink.innerHTML = '<img src="link.svg" alt="Permalink" />';
+
+  tippy(permalink, {
+    content: 'Permalink'
+  });
 
   permalink.onclick = function(event) {
     event.preventDefault();
@@ -763,6 +771,10 @@ function displayToast(parent, data, note, params) {
   const reply = document.createElement('a');
   reply.innerHTML = '<img src="reply.svg" alt="Reply" />';
 
+  tippy(reply, {
+    content: 'Reply'
+  });
+
   reply.onclick = function() {
     if (window.mode == "Toastr") {
       var form = this.parentElement.parentElement.parentElement.nextSibling.querySelector('& > .toast-new');
@@ -787,6 +799,11 @@ function displayToast(parent, data, note, params) {
 
   const link = document.createElement('a');
   link.classList.add('raw');
+
+  tippy(link, {
+    content: 'Copy to Clipboard'
+  });
+
   link.onclick = function(event) {
     event.preventDefault();
     console.log(note);
@@ -1601,6 +1618,10 @@ initSqlJs(config).then(function(SQL){
         favouritesLink.innerHTML = '✧';
       }
 
+      tippy(favouritesLink, {
+        content: 'Favourite'
+      });
+
       favouritesLink.dataset.id = row.id;
       favouritesLink.onclick = function(event) {
         event.preventDefault();
@@ -1617,6 +1638,11 @@ initSqlJs(config).then(function(SQL){
       debugLink.href = '#';
       debugLink.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--!Font Awesome Free v7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2026 Fonticons, Inc.--><path d="M360.8 1.2c-17-4.9-34.7 5-39.6 22l-128 448c-4.9 17 5 34.7 22 39.6s34.7-5 39.6-22l128-448c4.9-17-5-34.7-22-39.6zm64.6 136.1c-12.5 12.5-12.5 32.8 0 45.3l73.4 73.4-73.4 73.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0l96-96c12.5-12.5 12.5-32.8 0-45.3l-96-96c-12.5-12.5-32.8-12.5-45.3 0zm-274.7 0c-12.5-12.5-32.8-12.5-45.3 0l-96 96c-12.5 12.5-12.5 32.8 0 45.3l96 96c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L77.3 256 150.6 182.6c12.5-12.5 12.5-32.8 0-45.3z"/></svg>';
       debugLink.dataset.id = row.note;
+
+      tippy(debugLink, {
+        content: 'Copy to Clipboard'
+      });
+
       debugLink.onclick = function(event) {
         event.preventDefault();
         var note = event.target.dataset.id;
