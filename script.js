@@ -1452,6 +1452,7 @@ initSqlJs(config).then(function(SQL){
     var shouldShowHeadings = false;
     var shouldShowMessages = false;
     var shouldShowBackButton = false;
+    var shouldShowRoomButtons = false;
     var showEmptyMessage = true;
     var showFilters = false;
 
@@ -1566,14 +1567,17 @@ initSqlJs(config).then(function(SQL){
       shouldShowHeadings = false;
       shouldShowMessages = true;
 
+      var row;
+
       if (window.mode == "Toastr") {
         pageTitle = 'Viewing Thread';
         emptyMsg = "Sorry, there are no toasts corresponding to " + mode.substring(6) + ' (' + id + ')';
       } else if (window.mode == "YakClub") {
         var channelName = 'Unknown';
         while (stmt.step()) {
+          row = stmt.getAsObject();
           try {
-            channelName = JSON.parse(JSON.parse(stmt.getAsObject()["note"])["content"])["name"];
+            channelName = JSON.parse(JSON.parse(row["note"])["content"])["name"];
           } catch (e) { // Ignore it and just use Unknown for now
           }
         }
@@ -1583,6 +1587,44 @@ initSqlJs(config).then(function(SQL){
       }
       pageSubTitle = mode.substring(6).split('-')[0];
       shouldShowBackButton = true;
+      shouldShowRoomButtons = true;
+
+      var roomButtons = document.querySelector('#room-buttons');
+      roomButtons.innerHTML = '';
+
+      const favouritesLink = document.createElement('a');
+
+      favouritesLink.classList.add('favourites');
+      if (row.favourite) {
+        favouritesLink.innerHTML = '✦';
+      } else {
+        favouritesLink.innerHTML = '✧';
+      }
+
+      favouritesLink.dataset.id = row.id;
+      favouritesLink.onclick = function(event) {
+        event.preventDefault();
+        var result = toggleFavourite(event.target.dataset.id);
+        if (result) {
+          event.target.innerHTML = '✦';
+        } else {
+          event.target.innerHTML = '✧';
+        }
+      }
+
+      const debugLink = document.createElement('a');
+      debugLink.classList.add('raw');
+      debugLink.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--!Font Awesome Free v7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2026 Fonticons, Inc.--><path d="M360.8 1.2c-17-4.9-34.7 5-39.6 22l-128 448c-4.9 17 5 34.7 22 39.6s34.7-5 39.6-22l128-448c4.9-17-5-34.7-22-39.6zm64.6 136.1c-12.5 12.5-12.5 32.8 0 45.3l73.4 73.4-73.4 73.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0l96-96c12.5-12.5 12.5-32.8 0-45.3l-96-96c-12.5-12.5-32.8-12.5-45.3 0zm-274.7 0c-12.5-12.5-32.8-12.5-45.3 0l-96 96c-12.5 12.5-12.5 32.8 0 45.3l96 96c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L77.3 256 150.6 182.6c12.5-12.5 12.5-32.8 0-45.3z"/></svg>';
+      debugLink.dataset.id = row.note;
+      debugLink.onclick = function(event) {
+        event.preventDefault();
+        var note = event.target.dataset.id;
+        console.log(note);
+        writeClipboardText(note);
+      }
+
+      roomButtons.prepend(debugLink);
+      roomButtons.prepend(favouritesLink);
 
     } else if (mode.startsWith("replies-")) {
       shouldShowHeadings = false;
@@ -1804,7 +1846,7 @@ initSqlJs(config).then(function(SQL){
         container.querySelector('.toasts').appendChild(article);
 
         var favouritesLink = article.querySelector('a.favourites');
-        favouritesLink.dataset.id = event.id;
+        favouritesLink.dataset.id = row.id;
         favouritesLink.onclick = function(event) {
           event.preventDefault();
           var result = toggleFavourite(event.target.dataset.id);
@@ -1935,6 +1977,12 @@ initSqlJs(config).then(function(SQL){
       document.querySelector('#backBtn').style.display = 'inline-block';
     } else {
       document.querySelector('#backBtn').style.display = 'none';
+    }
+
+    if (shouldShowRoomButtons) {
+      document.querySelector('#room-buttons').style.display = 'inline-block';
+    } else {
+      document.querySelector('#room-buttons').style.display = 'none';
     }
 
     try {

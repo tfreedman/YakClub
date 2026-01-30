@@ -273,7 +273,6 @@ body {
       margin: 0 auto;
       width: 90%;
 
-
       & > h1:before {
         content: '✦';
         transform: rotate(15deg);
@@ -439,6 +438,16 @@ body {
       & > .toasts-container > .toasts > .toast {max-width: 100% !important}
       & > .toasts-container > .toasts > .children {
         margin-left: 0;
+      }
+
+      #room-buttons {
+        display: none;
+        font-size: 40px;
+        color: #FFF;
+        position: relative;
+        top: 5px;
+        svg {width: 30px; height: 30px; fill: #FFF; pointer-events: none}
+        a {margin: 0 10px}
       }
 
       #backBtn {
