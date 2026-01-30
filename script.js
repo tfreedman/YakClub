@@ -750,6 +750,10 @@ function displayToast(parent, data, note, params) {
     const expand = document.createElement('a');
     expand.innerHTML = '<img src="expand.svg" alt="View Context" />';
 
+    tippy(expand, {
+      content: 'View Context'
+    });
+
     expand.onclick = function(event) {
       event.preventDefault();
 
