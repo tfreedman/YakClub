@@ -658,7 +658,7 @@ function displayToast(parent, data, note, params) {
         <div class="content">
           <header>
             <div class="details">
-              <span class="username">${data.username}</span>
+              <a data-micromodal-trigger="modal-profile" href="#"><span class="username">${data.username}</span></a>
             </div>
             <div class="pubkey">${window.NostrTools.nip19.npubEncode(data.pubkey)}</div>
           </header>
@@ -1273,6 +1273,7 @@ initSqlJs(config).then(function(SQL){
     document.querySelector('#yak').style.display = 'block';
     drawToasts(document.querySelector('.toasts-container'), window.users, mode);
     window.lastDrawMode = mode;
+    modalInitialization();
   };
 
   var loadHome = function(event) {
@@ -1425,7 +1426,6 @@ initSqlJs(config).then(function(SQL){
                 searchResults(document.getElementById('search-bar').value);
               }
             }
-
             window.hasFinishedLoading = true;
           }
         }
@@ -2192,4 +2192,10 @@ function randomBytes(bytesLength = 32) {
     return crypto.getRandomValues(new Uint8Array(bytesLength));
   }
   throw new Error("crypto.getRandomValues must be defined");
+}
+
+function modalInitialization() {
+  MicroModal.init({
+    awaitCloseAnimation: true
+  });
 }
