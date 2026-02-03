@@ -253,7 +253,7 @@ body {
     position: relative;
     z-index: 2;
 
-    #settings *, #about * {max-width: 700px}
+    #settings * {max-width: 700px}
 
     #new .toast-close-button {display: none}
 
@@ -328,19 +328,6 @@ body {
         margin: 10px 0;
         padding: 0;
         a {color: #666; text-decoration: none}
-      }
-
-      #about {
-        .about {
-          width: 500px;
-          color: #160b39;
-          border-radius: 10px;
-          padding: 15px;
-          margin: 15px;
-
-          p:first-child {margin-top: 0}
-          p:last-child {margin-bottom: 0}
-        }
       }
     }
 

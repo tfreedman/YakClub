@@ -15,14 +15,14 @@ function toggleSearchBox() {
     document.querySelector('#search-container #search-wrapper').style.display = 'none';
     document.querySelector('#search-container #search').style.display = 'inline-block';
     document.querySelector('#logo').classList.remove('hidden');
-    document.querySelectorAll('#topbar nav .right > a').forEach(i => i.style.display = 'inline-block');
+    document.querySelectorAll('#topbar nav .right > a.tab').forEach(i => i.style.display = 'inline-block');
     showSearchIcon = false;
   } else {
     document.querySelector('#search-container #xmark').style.display = 'inline-block';
     document.querySelector('#search-container #search-wrapper').style.display = 'inline-block';
     document.querySelector('#search-container #search').style.display = 'none';
     document.querySelector('#logo').classList.add('hidden');
-    document.querySelectorAll('#topbar nav .right > a').forEach(i => i.style.display = 'none');
+    document.querySelectorAll('#topbar nav .right > a.tab').forEach(i => i.style.display = 'none');
     showSearchIcon = true;
   }
 }
@@ -1262,7 +1262,7 @@ initSqlJs(config).then(function(SQL){
       mode = 'domain-' + searchValue;
     }
 
-    document.querySelectorAll('#topbar nav .right > a').forEach(l => {
+    document.querySelectorAll('#topbar nav .right > a.tab').forEach(l => {
       l.classList.remove("active");
     });
 
@@ -2035,7 +2035,7 @@ initSqlJs(config).then(function(SQL){
         // Add a button to the empty message that opens the newToast UI
         if (mode.startsWith('url-') || (window.mode == "YakClub" && mode.startsWith('domain-'))) {
           if (window.mode == "Toastr") {
-            var newButton = '<button class=\'valid\' onclick=\'document.querySelectorAll("#topbar nav .right > a")[0].click()\'>' + actionMsg + '</button>';
+            var newButton = '<button class=\'valid\' onclick=\'document.querySelectorAll("#topbar nav .right > a.tab")[0].click()\'>' + actionMsg + '</button>';
             document.querySelector('#newToastContainer input[name="url"]').value = mode.substring(4);
           } else if (window.mode == "YakClub") {
             var newChannelForm = `<form class="toast-new-form" autocomplete="off" onsubmit="newNoteSubmit(event)" action="">
@@ -2171,10 +2171,10 @@ innerHTML += `<button type="submit" class="toast-submit-button">${submitText}</b
   }
 });
 
-document.querySelectorAll('#topbar nav .right > a').forEach(link => {
+document.querySelectorAll('#topbar nav .right > a.tab').forEach(link => {
   link.addEventListener("click", (e) => {
-    var num = Array.from(document.querySelectorAll("#topbar nav .right > a")).indexOf(e.currentTarget);
-    document.querySelectorAll('#topbar nav .right > a').forEach(l => {
+    var num = Array.from(document.querySelectorAll("#topbar nav .right > a.tab")).indexOf(e.currentTarget);
+    document.querySelectorAll('#topbar nav .right > a.tab').forEach(l => {
       l.classList.remove("active");
     });
     e.currentTarget.classList.add("active")

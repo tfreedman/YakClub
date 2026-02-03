@@ -32,6 +32,42 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+
+  h1:before {
+    content: '✦';
+    transform: rotate(15deg);
+    text-shadow: none;
+    color: #2d6084;
+    font-size: 96px;
+    position: relative;
+    left: -20px;
+    display: inline-block;
+    margin-right: -60px;
+    top: 20px;
+    -webkit-text-stroke: none;
+    z-index: -1;
+  }
+
+  h1 {
+    font-size: 30px;
+    display: inline;
+    line-height: 1em;
+    font-family: 'Grandstander';
+    color: #93d1f7;
+    margin-top: 0;
+    margin: 0;
+    padding: 0;
+    position: relative;
+    z-index: 1;
+    paint-order: stroke fill;
+    -webkit-text-stroke: 12px #FFF;
+
+    &:hover {text-decoration: underline}
+  }
+
+  h2 {
+    color: #2d6084
+  }
 }
 
 .modal__title {
