@@ -93,7 +93,6 @@ body {
   h1, h2, h3, h4, h5, h6, .username, label, button {font-family: 'Fredoka'; font-weight: bold}
   input, textarea {font-family: 'Fredoka'}
 
-
   #emoji-picker {
     width: 352px;
     height: 435px;
