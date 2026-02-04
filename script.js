@@ -652,15 +652,17 @@ function displayToast(parent, data, note, params) {
     author.classList.add('author');
     author.innerHTML = `
       <div>
-        <div class="avatar">
-          <img src="${data.avatarURL}" class="${imageClass}"/>
-        </div>
+        <a onclick="updateProfileModal(event, '${data.pubkey}')" class="modal-profile-button" data-micromodal-trigger="modal-profile" href="#">
+          <div class="avatar">
+            <img src="${data.avatarURL}" class="${imageClass}"/>
+          </div>
+        </a>
         <div class="content">
           <header>
             <div class="details">
-              <a data-micromodal-trigger="modal-profile" href="#"><span class="username">${data.username}</span></a>
+              <a onclick="updateProfileModal(event, '${data.pubkey}')" class="modal-profile-button" data-micromodal-trigger="modal-profile" href="#"><span class="username">${data.username}</span></a>
             </div>
-            <div class="pubkey">${window.NostrTools.nip19.npubEncode(data.pubkey)}</div>
+            <a onclick="updateProfileModal(event, '${data.pubkey}')" class="modal-profile-button" data-micromodal-trigger="modal-profile" href="#"><div class="pubkey">${window.NostrTools.nip19.npubEncode(data.pubkey)}</div></a>
           </header>
         </div>
       </div>
@@ -2198,4 +2200,53 @@ function modalInitialization() {
   MicroModal.init({
     awaitCloseAnimation: true
   });
+}
+
+function updateProfileModal(event, pubKey) {
+  parent = document.querySelector('#modal-profile .profile');
+  parent.innerHTML = '';
+
+  var hasUsername = false;
+  var hasPicture = false;
+
+  if (window.users[pubKey] !== undefined) {
+    var profile = JSON.parse(window.users[pubKey].content);
+    if (profile.name !== undefined) {
+      document.querySelector('#modal-profile #modal-profile-title').innerHTML = profile.name;
+      hasUsername = true;
+    }
+    if (profile.displayName !== undefined) {
+      document.querySelector('#modal-profile #modal-profile-title').innerHTML = profile.displayName;
+      hasUsername = true;
+    }
+    if (profile.website !== undefined) {
+      const website = document.createElement('a');
+      website.innerHTML = profile.website;
+      website.href = profile.website;
+      website.classList.add('website');
+      parent.appendChild(website);
+    }
+    if (profile.about !== undefined) {
+      const about = document.createElement('p');
+      about.innerHTML = profile.about;
+      about.classList.add('about');
+      parent.appendChild(about);
+    }
+    if (profile.banner !== undefined) {
+      //document.querySelector('#modal-profile input[name="banner"]').value = profile.banner;
+    }
+    if (profile.picture !== undefined) {
+      document.querySelector('#modal-profile .avatar img').src = profile.picture;
+      hasPicture = true;
+    }
+  }
+  if (!hasPicture) {
+    document.querySelector('#modal-profile .avatar img').src = hashicon(pubKey).toDataURL();
+    document.querySelector('#modal-profile .avatar img').classList.add('hashicon');
+  }
+  if (!hasUsername) {
+    document.querySelector('#modal-profile #modal-profile-title').innerHTML = 'Unknown';
+  }
+
+  document.querySelector('#modal-profile .pubkey').innerHTML = window.NostrTools.nip19.npubEncode(pubKey);
 }
