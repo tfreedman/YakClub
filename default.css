@@ -431,6 +431,7 @@ body {
         font-size: 40px;
         color: #FFF;
         position: relative;
+        width: 100px;
         top: 5px;
         left: 100px;
         svg {width: 30px; height: 30px; fill: #FFF; pointer-events: none}
