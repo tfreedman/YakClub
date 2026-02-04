@@ -432,6 +432,7 @@ body {
         color: #FFF;
         position: relative;
         top: 5px;
+        left: 100px;
         svg {width: 30px; height: 30px; fill: #FFF; pointer-events: none}
         a {margin: 0 10px; text-decoration: none; color: #fff}
       }
