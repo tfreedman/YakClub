@@ -16,12 +16,14 @@ function toggleSearchBox() {
     document.querySelector('#search-container #search').style.display = 'inline-block';
     document.querySelector('#logo').classList.remove('hidden');
     document.querySelectorAll('#topbar nav .right > a.tab').forEach(i => i.style.display = 'inline-block');
+    document.querySelector('#topbar nav .right > a.modal-info-button').style.display = 'inline-block';
     showSearchIcon = false;
   } else {
     document.querySelector('#search-container #xmark').style.display = 'inline-block';
     document.querySelector('#search-container #search-wrapper').style.display = 'inline-block';
     document.querySelector('#search-container #search').style.display = 'none';
     document.querySelector('#logo').classList.add('hidden');
+    document.querySelector('#topbar nav .right > a.modal-info-button').style.display = 'none';
     document.querySelectorAll('#topbar nav .right > a.tab').forEach(i => i.style.display = 'none');
     showSearchIcon = true;
   }
