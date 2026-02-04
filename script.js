@@ -358,12 +358,14 @@ function updateProfile() {
   var website = container.querySelector('input[name="website"]').value;
   var banner = container.querySelector('input[name="banner"]').value;
   var picture = container.querySelector('input[name="picture"]').value;
+  var about = container.querySelector('textarea[name="about"]').value;
 
   if (name.length > 0) {content.name = name}
   if (displayName.length > 0) {content.displayName = displayName}
   if (website.length > 0) {content.website = website}
   if (banner.length > 0) {content.banner = banner}
   if (picture.length > 0) {content.picture = picture}
+  if (about.length > 0) {content.about = about}
 
   var e = {
     created_at: Math.floor(Date.now() / 1000),
