@@ -354,7 +354,8 @@ body {
       color: #fff;
       fill: #fff;
       svg {fill: #fff}
-      &:hover {background: #fb64b6; color: #fff; svg {fill: #fff}}
+      &:click {background: #b3166d}
+      &:hover {background: #ff289d; color: #fff; svg {fill: #fff}}
       &:active {background: #cc5295}
     }
 
