@@ -324,6 +324,9 @@ function displayProfile(pubKey) {
       if (profile.website !== undefined) {
         document.querySelector('#profile input[name="website"]').value = profile.website;
       }
+      if (profile.about !== undefined) {
+        document.querySelector('#profile textarea[name="about"]').value = profile.about;
+      }
       if (profile.banner !== undefined) {
         document.querySelector('#profile input[name="banner"]').value = profile.banner;
       }
@@ -392,6 +395,7 @@ function uploadProfileEvent(note) {
   console.log("Sending " + JSON.stringify(note));
   Promise.any(window.pool.publish(relays, note)).then(relay => {
     console.log("Uploaded kind 0 event")
+    window.importToast(note, window.hasFinishedLoading);
   });
 }
 
@@ -909,7 +913,6 @@ initSqlJs(config).then(function(SQL){
           displayProfile(window.pubKey);
         }
         db.run("UPDATE notes SET id = ?, created_at = ?, kind = ?, note = ? WHERE pubkey = ? AND created_at < ? AND kind = 0)", [value['id'], value['created_at'], value['kind'], note, value['pubkey'], value['created_at']]);
-
         dirty = true;
         console.log('Adding ' + value['pubkey'] + ' to window.users...');
       }
