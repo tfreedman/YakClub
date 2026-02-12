@@ -29,6 +29,15 @@ function toggleSearchBox() {
   }
 }
 
+document.querySelector('#search').addEventListener("click", toggleSearchBox)
+document.querySelector('#xmark').addEventListener("click", toggleSearchBox)
+
+var formInputs = document.querySelectorAll("#profile form input, #profile form textarea");
+
+formInputs.forEach(i => {
+  i.addEventListener('keyup', (e) => validateProfile(e));
+});
+
 toggleSearchBox();
 
 config = {
@@ -660,7 +669,7 @@ function displayToast(parent, data, note, params) {
     author.classList.add('author');
     author.innerHTML = `
       <div>
-        <a onclick="updateProfileModal(event, '${data.pubkey}')" class="modal-profile-button" data-micromodal-trigger="modal-profile" href="#">
+        <a class="modal-profile-button" data-micromodal-trigger="modal-profile" href="#">
           <div class="avatar">
             <img src="${data.avatarURL}" class="${imageClass}"/>
           </div>
@@ -668,9 +677,9 @@ function displayToast(parent, data, note, params) {
         <div class="content">
           <header>
             <div class="details">
-              <a onclick="updateProfileModal(event, '${data.pubkey}')" class="modal-profile-button" data-micromodal-trigger="modal-profile" href="#"><span class="username">${data.username}</span></a>
+              <a class="modal-profile-button" data-micromodal-trigger="modal-profile" href="#"><span class="username">${data.username}</span></a>
             </div>
-            <a onclick="updateProfileModal(event, '${data.pubkey}')" class="modal-profile-button" data-micromodal-trigger="modal-profile" href="#"><div class="pubkey">${window.NostrTools.nip19.npubEncode(data.pubkey)}</div></a>
+            <a class="modal-profile-button" data-micromodal-trigger="modal-profile" href="#"><div class="pubkey">${window.NostrTools.nip19.npubEncode(data.pubkey)}</div></a>
           </header>
         </div>
       </div>
@@ -681,6 +690,11 @@ function displayToast(parent, data, note, params) {
     } else if (params.read && params.read == true) {
       author.classList.add('read')
     }
+
+    var links = author.querySelectorAll("a");
+    links.forEach(i => {
+      i.addEventListener('click', (e) => updateProfileModal(e, data.pubkey));
+    });
   }
 
   var innerHTML = `
@@ -1715,8 +1729,15 @@ initSqlJs(config).then(function(SQL){
 
     if (showFilters) {
       var article = document.createElement('div');
-      var innerHTML = `<p class="filters"><a href="#" onclick="filterToasts(event)" data-filter="all">all</a> <span class="middot">&middot;</span> <a href="#" onclick="filterToasts(event)" data-filter="favourite">favourites</a> <span class="middot">&middot;</span> <a href="#" onclick="filterToasts(event)" data-filter="participant">participated</a> <span class="middot">&middot;</span> <a href="#" onclick="filterToasts(event)" data-filter="creator">created</a></p>`
+      var innerHTML = `<p class="filters"><a href="#" data-filter="all">all</a> <span class="middot">&middot;</span> <a href="#" data-filter="favourite">favourites</a> <span class="middot">&middot;</span> <a href="#" data-filter="participant">participated</a> <span class="middot">&middot;</span> <a href="#" data-filter="creator">created</a></p>`
       article.innerHTML = innerHTML;
+
+      var links = article.querySelectorAll("a");
+      links.forEach(i => {
+        i.addEventListener('click', (e) => filterToasts(e));
+      });
+
+
       container.querySelector('.toasts').appendChild(article);
     }
 
@@ -2097,13 +2118,13 @@ initSqlJs(config).then(function(SQL){
       <div>
         <img class="avatar" src="${avatarURL}" />
         <div class="content">
-          <form class="toast-new-form" autocomplete="off" onsubmit="newNoteSubmit(event)" action="">`
+          <form class="toast-new-form" autocomplete="off" action="">`
 
           if (window.mode == "Toastr") { innerHTML += `
-            <input type="url" name="url" value="" placeholder="URL" required onkeydown="validateToast(event, 1)"></input>
-            <input type="text" name="title" placeholder="Write a title..." required onkeydown="validateToast(event, 1)"></input>
+            <input type="url" name="url" value="" placeholder="URL" required></input>
+            <input type="text" name="title" placeholder="Write a title..." required></input>
           `} else if (window.mode == "YakClub") { innerHTML += `
-            <input type="text" name="url" value="" placeholder="Room or domain name" required onkeydown="validateToast(event, 1)"></input>
+            <input type="text" name="url" value="" placeholder="Room or domain name" required></input>
           `}
 
 innerHTML += `<button type="submit" class="toast-submit-button">${submitText}</button>
@@ -2113,6 +2134,15 @@ innerHTML += `<button type="submit" class="toast-submit-button">${submitText}</b
     `
 
     div.innerHTML = innerHTML;
+
+    var form = div.querySelector('form');
+    form.addEventListener('submit', (e) => newNoteSubmit(e));
+
+    var inputs = div.querySelectorAll("input");
+    inputs.forEach(i => {
+      i.addEventListener('keydown', (e) => validateToast(e, 1));
+    });
+
     node.append(div);
   }
 
@@ -2134,11 +2164,11 @@ innerHTML += `<button type="submit" class="toast-submit-button">${submitText}</b
     var innerHTML = `
       <div>
         <div class="content">
-          <form class="toast-new-form" autocomplete="off" onsubmit="newNoteSubmit(event)" action="">
+          <form class="toast-new-form" autocomplete="off" action="">
             <div class="middle">
               <div class="reply-details hidden">
                 <div class="tags"></div>
-                <button type="button" onclick="deleteReplyContent(event)" class="valid reply-cancel">×</button>
+                <button type="button" class="valid reply-cancel">×</button>
 
                 <p class="heading"></p>
                 <div class="context">
@@ -2158,7 +2188,7 @@ innerHTML += `<button type="submit" class="toast-submit-button">${submitText}</b
               })
 
            innerHTML += `
-              <textarea required minlength="1" name="message" placeholder="Send a message..." oninput="resizeTextArea(event)" onkeydown="validateToast(event, 2)"></textarea>
+              <textarea required minlength="1" name="message" placeholder="Send a message..."></textarea>
               <a id="show-emoji-picker-button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free v7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2026 Fonticons, Inc.--><path d="M464 256a208 208 0 1 0 -416 0 208 208 0 1 0 416 0zM0 256a256 256 0 1 1 512 0 256 256 0 1 1 -512 0zm177.3 63.4C192.3 335 218.4 352 256 352s63.7-17 78.7-32.6c9.2-9.6 24.4-9.9 33.9-.7s9.9 24.4 .7 33.9c-22.1 23-60 47.4-113.3 47.4s-91.2-24.4-113.3-47.4c-9.2-9.6-8.9-24.8 .7-33.9s24.8-8.9 33.9 .7zM144 208a32 32 0 1 1 64 0 32 32 0 1 1 -64 0zm192-32a32 32 0 1 1 0 64 32 32 0 1 1 0-64z"/></svg></a>
             </div>
             <button type="submit" class="toast-submit-button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--!Font Awesome Free v7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2026 Fonticons, Inc.--><path d="M536.4-26.3c9.8-3.5 20.6-1 28 6.3s9.8 18.2 6.3 28l-178 496.9c-5 13.9-18.1 23.1-32.8 23.1-14.2 0-27-8.6-32.3-21.7l-64.2-158c-4.5-11-2.5-23.6 5.2-32.6l94.5-112.4c5.1-6.1 4.7-15-.9-20.6s-14.6-6-20.6-.9L229.2 276.1c-9.1 7.6-21.6 9.6-32.6 5.2L38.1 216.8c-13.1-5.3-21.7-18.1-21.7-32.3 0-14.7 9.2-27.8 23.1-32.8l496.9-178z"/></svg> Send</button>
@@ -2174,6 +2204,17 @@ innerHTML += `<button type="submit" class="toast-submit-button">${submitText}</b
     }
 
     div.innerHTML = innerHTML;
+
+    var textarea = div.querySelector("textarea");
+    textarea.addEventListener('keydown', (e) => validateToast(e, 2));
+    textarea.addEventListener('input', (e) => resizeTextArea(e));
+
+    var form = div.querySelector("form");
+    form.addEventListener('submit', (e) => newNoteSubmit(e));
+
+    var cancelButton = div.querySelector("reply-cancel");
+    cancelButton.addEventListener('click', (e) => deleteReplyContent(e));
+
     node.append(div);
 
     document.querySelector('#show-emoji-picker-button').addEventListener('click', function(event) {event.stopPropagation(); toggleEmojiWindow(event)});
@@ -2257,3 +2298,7 @@ function updateProfileModal(event, pubKey) {
 
   document.querySelector('#modal-profile .pubkey').innerHTML = window.NostrTools.nip19.npubEncode(pubKey);
 }
+
+MicroModal.init({
+  awaitCloseAnimation: true
+});
