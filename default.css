@@ -430,7 +430,7 @@ body {
         font-size: 40px;
         color: #FFF;
         position: relative;
-        width: 100px;
+        width: 110px;
         top: 5px;
         left: 80px;
         svg {width: 30px; height: 30px; fill: #FFF; pointer-events: none}
