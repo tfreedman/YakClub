@@ -195,7 +195,7 @@ function setExtensionURL(currentURL) {
   const stmt = window.db.prepare("SELECT * FROM toasts WHERE domain = $domain");
   stmt.bind({$domain: domain});
 
-  var existingRoom = null;
+  var existingRoom;
 
   var rows = [];
   // Bind new values
@@ -206,10 +206,10 @@ function setExtensionURL(currentURL) {
   }
 
   const searchBar = document.getElementById('search-bar');
-  if (existingRoom) {
+  if (existingRoom && searchBar.value != existingRoom) {
     searchBar.value = existingRoom;
-  } else {
-    searchBar.value = currentURL;
+  } else if (existingRoom === undefined && searchBar.value != domain) {
+    searchBar.value = domain;
   }
   searchResults(document.getElementById('search-bar').value);
 }
@@ -2123,18 +2123,28 @@ initSqlJs(config).then(function(SQL){
         // Add a button to the empty message that opens the newToast UI
         if (mode.startsWith('url-') || (window.mode == "YakClub" && mode.startsWith('domain-'))) {
           if (window.mode == "Toastr") {
-            var newButton = '<button class=\'valid\' onclick=\'document.querySelectorAll("#topbar nav .right > a.tab")[0].click()\'>' + actionMsg + '</button>';
+            var newItem = '<button class=\'valid\'>' + actionMsg + '</button>';
             document.querySelector('#newToastContainer input[name="url"]').value = mode.substring(4);
           } else if (window.mode == "YakClub") {
-            var newChannelForm = `<form class="toast-new-form" autocomplete="off" onsubmit="newNoteSubmit(event)" action="">
-              <input type="hidden" name="url" value="${mode.substring(7)}" placeholder="Room or domain name" required="" onkeydown="validateToast(event, 1)">
+            var newItem = `<form class="toast-new-form" autocomplete="off" action="">
+              <input type="hidden" name="url" value="${mode.substring(7)}" placeholder="Room or domain name" required="">
               <button type="submit" class="toast-submit-button">${actionMsg}</button>
             </form>`;
           }
 
-          container.querySelector('.toasts-empty').innerHTML += '<br />' + newChannelForm;
-        }
+          container.querySelector('.toasts-empty').innerHTML += '<br />' + newItem;
 
+          var emptyToast = container.querySelector('.toasts-empty')
+          emptyToast.addEventListener('submit', (e) => newNoteSubmit(e));
+
+          var emptyInput = container.querySelector('.toasts-empty input')
+          emptyInput.addEventListener('keydown', (e) => validateToast(e, 1));
+
+          if (window.mode == "Toastr") {
+            var emptyButton = container.querySelector('.toasts-empty button')
+            emptyButton.addEventListener('click', (e) => document.querySelectorAll("#topbar nav .right > a.tab")[0].click());
+          }
+        }
 
         container.querySelector('.toasts-empty').classList.add("active");
       } else {
