@@ -188,8 +188,29 @@ function filterToasts(event) {
 }
 
 // Chrome, Yak Club
-function setExtensionURL(tab, currentURL) {
-  searchBar.value = currentURL;
+function setExtensionURL(currentURL) {
+  const u = new URL(currentURL);
+  var domain = u.hostname.toLowerCase();
+
+  const stmt = window.db.prepare("SELECT * FROM toasts WHERE domain = $domain");
+  stmt.bind({$domain: domain});
+
+  var existingRoom = null;
+
+  var rows = [];
+  // Bind new values
+  while(stmt.step()) {
+    const row = stmt.getAsObject();
+    rows.push(JSON.stringify(row));
+    existingRoom = window.NostrTools.nip19.noteEncode(row["id"]);
+  }
+
+  const searchBar = document.getElementById('search-bar');
+  if (existingRoom) {
+    searchBar.value = existingRoom;
+  } else {
+    searchBar.value = currentURL;
+  }
   searchResults(document.getElementById('search-bar').value);
 }
 
@@ -1094,13 +1115,13 @@ initSqlJs(config).then(function(SQL){
 
     chrome.tabs.onActivated.addListener( function(activeInfo){
       chrome.tabs.get(activeInfo.tabId, function(tab){
-        setExtensionURL(tab, tab.url);
+        setExtensionURL(tab.url);
       });
     });
 
     chrome.tabs.onUpdated.addListener((tabId, change, tab) => {
       if (tab.active && change.url) {
-        setExtensionURL(tab, change.url);
+        setExtensionURL(change.url);
       }
     });
 
@@ -1108,8 +1129,7 @@ initSqlJs(config).then(function(SQL){
       active: true,
       currentWindow: true
     }, function(tabs) {
-      searchBar.value = tabs[0].url;
-      searchResults(document.getElementById('search-bar').value);
+      setExtensionURL(tabs[0].url);
     });
   }
 
@@ -1134,8 +1154,7 @@ initSqlJs(config).then(function(SQL){
       active: true,
       currentWindow: true
     }, function(tabs) {
-      searchBar.value = tabs[0].url;
-      searchResults(document.getElementById('search-bar').value);
+      setExtensionURL(tabs[0].url);
     });
   } else {
     // Not a browser extension
