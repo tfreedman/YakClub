@@ -187,6 +187,13 @@ function filterToasts(event) {
   });
 }
 
+// Chrome, Yak Club
+function setExtensionURL(tab, currentURL) {
+  searchBar.value = currentURL;
+  searchResults(document.getElementById('search-bar').value);
+}
+
+// Firefox, Toastr
 function setExtensionIcon(tab, currentURL) {
   const u = new URL(currentURL);
   var domain = u.hostname.toLowerCase();
@@ -201,23 +208,29 @@ function setExtensionIcon(tab, currentURL) {
     rows.push(JSON.stringify(row));
   }
 
-  console.log("Setting Extension! @ " + currentURL);
-  if(rows.length > 0) {
+  console.log("Setting Extension Icon! @ " + currentURL);
+  if (rows.length > 0) {
     console.log("Toasting Icon");
-    browser.browserAction.setIcon({
-      path: {
-        '16': "icons/red-16.png",
-        '32': "icons/red-32.png",
-        '64': "icons/red-64.png",
-    }, tabId: tab.id});
+    // Firefox
+    if (typeof browser !== "undefined" && typeof browser.tabs !== "undefined") {
+      browser.browserAction.setIcon({
+        path: {
+          '16': "icons/red-16.png",
+          '32': "icons/red-32.png",
+          '64': "icons/red-64.png",
+      }, tabId: tab.id});
+    }
   } else {
     console.log("Untoasting Icon");
-    browser.browserAction.setIcon({
-      path: {
-        '16': "icons/logo-16.png",
-        '32': "icons/logo-32.png",
-        '64': "icons/logo-64.png",
-    }, tabId: tab.id});
+    // Firefox
+    if (typeof browser !== "undefined" && typeof browser.tabs !== "undefined") {
+      browser.browserAction.setIcon({
+        path: {
+          '16': "icons/logo-16.png",
+          '32': "icons/logo-32.png",
+          '64': "icons/logo-64.png",
+      }, tabId: tab.id});
+    }
   }
 }
 
@@ -1074,6 +1087,37 @@ initSqlJs(config).then(function(SQL){
   window.localStorage.setItem("version", window.version);
   window.localStorage.setItem("settings", JSON.stringify(0));
   window.db = db;
+
+  if (typeof chrome !== "undefined" && typeof chrome.tabs !== "undefined") {
+    // Chrome Extension
+    window.browserExtension = true;
+
+/*    console.log('Chrome extension!')
+    chrome.tabs.query({ active: true }, tabs => {
+      console.log(tabs);
+    }); */
+
+    chrome.tabs.onActivated.addListener( function(activeInfo){
+      chrome.tabs.get(activeInfo.tabId, function(tab){
+        setExtensionURL(tab, tab.url);
+      });
+    });
+
+    chrome.tabs.onUpdated.addListener((tabId, change, tab) => {
+      if (tab.active && change.url) {
+        setExtensionURL(tab, change.url);
+      }
+    });
+
+    chrome.tabs.query({
+      active: true,
+      currentWindow: true
+    }, function(tabs) {
+      searchBar.value = tabs[0].url;
+      searchResults(document.getElementById('search-bar').value);
+    });
+  }
+
 
   if (typeof browser !== "undefined" && typeof browser.tabs !== "undefined") {
     // Firefox Extension
