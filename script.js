@@ -233,7 +233,7 @@ function setExtensionIcon(tab, currentURL) {
   if (rows.length > 0) {
     console.log("Toasting Icon");
     // Firefox
-    if (typeof browser !== "undefined" && typeof browser.tabs !== "undefined") {
+    if (typeof browser !== "undefined" && typeof browser.tabs !== "undefined" && typeof browser.browserAction !== "undefined") {
       browser.browserAction.setIcon({
         path: {
           '16': "icons/red-16.png",
@@ -244,7 +244,7 @@ function setExtensionIcon(tab, currentURL) {
   } else {
     console.log("Untoasting Icon");
     // Firefox
-    if (typeof browser !== "undefined" && typeof browser.tabs !== "undefined") {
+    if (typeof browser !== "undefined" && typeof browser.tabs !== "undefined" && typeof browser.browserAction !== "undefined") {
       browser.browserAction.setIcon({
         path: {
           '16': "icons/logo-16.png",

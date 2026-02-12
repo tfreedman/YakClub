@@ -9,13 +9,19 @@
     "48": "icons/logo-48.png"
   },
   "background": {
-    "service_worker": "service-worker.js"
+    "service_worker": "service-worker.js",
+    "scripts": []
   },
   "content_security_policy": {
-    "extension_pages": "worker-src 'self' http://localhost:3000; script-src 'self' 'wasm-unsafe-eval'"
+    "extension_pages": "worker-src 'self'; script-src 'self' 'wasm-unsafe-eval'"
   },
   "side_panel": {
     "default_path": "index.html"
+  },
+  "sidebar_action": {
+    "default_title": "Yak Club",
+    "default_panel": "index.html",
+    "default_icon": "icons/logo-64.png"
   },
   "permissions": [
     "webRequest",
