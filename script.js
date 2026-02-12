@@ -2212,7 +2212,7 @@ innerHTML += `<button type="submit" class="toast-submit-button">${submitText}</b
     var form = div.querySelector("form");
     form.addEventListener('submit', (e) => newNoteSubmit(e));
 
-    var cancelButton = div.querySelector("reply-cancel");
+    var cancelButton = div.querySelector(".reply-cancel");
     cancelButton.addEventListener('click', (e) => deleteReplyContent(e));
 
     node.append(div);
