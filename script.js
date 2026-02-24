@@ -17,6 +17,7 @@ function toggleSearchBox() {
     document.querySelector('#logo').classList.remove('hidden');
     document.querySelectorAll('#topbar nav .right > a.tab').forEach(i => i.style.display = 'inline-block');
     document.querySelector('#topbar nav .right > a.modal-info-button').style.display = 'inline-block';
+    document.querySelector('#topbar nav .right > a.modal-account-button').style.display = 'inline-block';
     showSearchIcon = false;
   } else {
     document.querySelector('#search-container #xmark').style.display = 'inline-block';
@@ -24,6 +25,7 @@ function toggleSearchBox() {
     document.querySelector('#search-container #search').style.display = 'none';
     document.querySelector('#logo').classList.add('hidden');
     document.querySelector('#topbar nav .right > a.modal-info-button').style.display = 'none';
+    document.querySelector('#topbar nav .right > a.modal-account-button').style.display = 'none';
     document.querySelectorAll('#topbar nav .right > a.tab').forEach(i => i.style.display = 'none');
     showSearchIcon = true;
   }
@@ -842,7 +844,7 @@ function displayToast(parent, data, note, params) {
     if (window.mode == "Toastr") {
       var form = this.parentElement.parentElement.parentElement.nextSibling.querySelector('& > .toast-new');
     } else if (window.mode == "YakClub") {
-      var form = document.querySelector('.toast-new-form');
+      var form = document.querySelector('#footer .toast-new-form');
       form.querySelector('.reply-details .heading').innerHTML = 'Replying to:';
 
       var replyAuthor = getReplyAuthor(this.parentElement.parentElement.parentElement.parentElement);
@@ -2153,7 +2155,8 @@ initSqlJs(config).then(function(SQL){
         container.querySelector('.toasts-empty').classList.remove("active");
       }
       if (mode.startsWith('toast-') && window.lastDrawMode != mode) {
-        newNote(container, {eTags: [['e', event.id, '', 'root', event.pubkey]], showButton: true});
+        document.querySelector('#footer').innerHTML = ''; // remove old forms
+        newNote(document.querySelector('#footer'), {eTags: [['e', event.id, '', 'root', event.pubkey]], showButton: true});
       }
 
       if (document.getElementById('search-bar').value) {
