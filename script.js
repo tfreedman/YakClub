@@ -2102,7 +2102,7 @@ initSqlJs(config).then(function(SQL){
     }
 
     if (shouldShowRoomButtons) {
-      document.querySelector('#room-buttons').style.display = 'block';
+      document.querySelector('#room-buttons').style.display = 'inline-block';
     } else {
       document.querySelector('#room-buttons').style.display = 'none';
     }
