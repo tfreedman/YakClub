@@ -1560,6 +1560,7 @@ initSqlJs(config).then(function(SQL){
     var shouldShowRoomButtons = false;
     var showEmptyMessage = true;
     var showFilters = false;
+    var showFooter = false;
 
     if (mode.startsWith("domain-")) {
       console.log("Filtering to domain name " + mode.substring(7));
@@ -1685,6 +1686,7 @@ initSqlJs(config).then(function(SQL){
             channelName = JSON.parse(JSON.parse(row["note"])["content"])["name"];
           } catch (e) { // Ignore it and just use Unknown for now
           }
+          showFooter = true;
         }
 
         pageTitle = 'Channel' + ' ' + channelName;
@@ -2105,6 +2107,12 @@ initSqlJs(config).then(function(SQL){
       document.querySelector('#room-buttons').style.display = 'inline-block';
     } else {
       document.querySelector('#room-buttons').style.display = 'none';
+    }
+
+    if (showFooter) {
+      document.querySelector('footer#footer').style.display = 'block';
+    } else {
+      document.querySelector('footer#footer').style.display = 'none';
     }
 
     try {
