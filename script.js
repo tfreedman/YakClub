@@ -279,11 +279,11 @@ function getRelays() {
 
   if (override_relays) {
     var relays = ["wss://toastr.tylerfreedman.com", "wss://purplepag.es"];
-    document.querySelector('#settings #relays .message').innerHTML = 'Overriding NIP-07 Relays for debugging purposes';
+    document.querySelector('#modal-account #relays .message').innerHTML = 'Overriding NIP-07 Relays for debugging purposes';
   } else {
     if (typeof window.nostr !== 'undefined') {
       // Detected NIP-07 support
-      document.querySelector('#settings #relays .message').innerHTML = 'Retrieving relays via NIP-07';
+      document.querySelector('#modal-account #relays .message').innerHTML = 'Retrieving relays via NIP-07';
       window.nostr.getRelays().then(r => {
         for (const [key, value] of Object.entries(r)) {
           relays.push(key);
@@ -309,7 +309,7 @@ function displayRelays(relays) {
     `
   });
 
-  document.querySelector('#settings .relays').innerHTML = div.innerHTML;
+  document.querySelector('#modal-account .relays').innerHTML = div.innerHTML;
 }
 
 function editKeys() {
@@ -439,6 +439,7 @@ function uploadProfileEvent(note) {
   Promise.any(window.pool.publish(relays, note)).then(relay => {
     console.log("Uploaded kind 0 event")
     window.importToast(note, window.hasFinishedLoading);
+    MicroModal.close('modal-account');
   });
 }
 

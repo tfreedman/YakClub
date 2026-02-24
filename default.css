@@ -122,6 +122,34 @@ body {
 
   p {line-height: 1.5em}
 
+  button {
+    margin: 5px 0;
+    border: none;
+    color: #fb64b6;
+    padding: 10px 20px;
+    background: #fff;
+    border-radius: 20px;
+    transition: all 0.25s;
+    margin-right: 10px;
+
+    svg {fill: #fb64b6; transition: all 0.5s}
+    &:first-of-type {margin-right: 0}
+  }
+
+  form button, button {
+    svg {fill: #fb64b6; width: 18px; height: 18px; vertical-align: middle; color: #fb64b6}
+  }
+
+  form:valid button, button.valid {
+    background: #fb64b6;
+    color: #fff;
+    fill: #fff;
+    svg {fill: #fff}
+    &:click {background: #b3166d}
+    &:hover {background: #ff289d; color: #fff; svg {fill: #fff}}
+    &:active {background: #cc5295}
+  }
+
   #topbar {
     width: 90%;
     position: relative;
@@ -253,8 +281,6 @@ body {
     position: relative;
     z-index: 2;
 
-    #settings * {max-width: 700px}
-
     #new .toast-close-button {display: none}
 
     #loading {
@@ -326,95 +352,6 @@ body {
         margin: 10px 0;
         padding: 0;
         a {color: #666; text-decoration: none}
-      }
-    }
-
-    button {
-      margin: 5px 0;
-      border: none;
-      color: #fb64b6;
-      padding: 10px 20px;
-      background: #fff;
-      border-radius: 20px;
-      transition: all 0.25s;
-      margin-right: 10px;
-
-      svg {fill: #fb64b6; transition: all 0.5s}
-      &:first-of-type {margin-right: 0}
-    }
-
-    form button, button {
-      svg {fill: #fb64b6; width: 18px; height: 18px; vertical-align: middle; color: #fb64b6}
-    }
-
-    form:valid button, button.valid {
-      background: #fb64b6;
-      color: #fff;
-      fill: #fff;
-      svg {fill: #fff}
-      &:click {background: #b3166d}
-      &:hover {background: #ff289d; color: #fff; svg {fill: #fff}}
-      &:active {background: #cc5295}
-    }
-
-    #settings {
-      #profile .avatar {
-        object-fit: cover;
-        border-radius: 74px;
-        overflow: hidden;
-        height: 74px;
-        min-height: 74px;
-        min-width: 74px;
-        width: 74px;
-        border: 5px solid #FFF;
-        margin: 0 auto;
-        display: block;
-      }
-
-      #profile, #relays, #keys {
-        width: 300px;
-        display: flex;
-        color: #160b39;
-        padding: 10px;
-        margin: 10px;
-
-        form {
-          width: 100%;
-          button {float: right}
-
-          .submit-container {display: none}
-
-          .field {
-            display: flex;
-            flex-direction: column;
-            width: fit-content;
-            position: static;
-            width: 100%;
-
-            label {
-              font-size: 0.75rem;
-              font-weight: 700;
-              margin: 10px 0 0 0;
-              padding: 0 3px;
-              text-align: right;
-              width: fit-content;
-              padding: 5px 5px 5px 0;
-              margin: 3px 0;
-              display: inline-block;
-            }
-
-            input[type=text].input, input[type=url].input, textarea {
-              padding: 11px 10px;
-              font-size: 0.75rem;
-              background-color: rgba(255, 255, 255, 0.8);
-              border: 1px solid #eaeaea;
-              border-radius: .375rem;
-
-              &:disabled {background: #FFF; opacity: 0.5}
-              &:focus {outline: none}
-            }
-          }
-        }
       }
     }
 
@@ -640,7 +577,7 @@ body {
               fill: #AAA;
               cursor: pointer;
 
-              @media screen and (max-width: 660px) {
+              @@media screen and (max-width: 660px) {
                 display: none;
               }
             }
@@ -790,6 +727,79 @@ body {
                 &:hover {color: #000; transition: all 0.5s}
               }
             }
+          }
+        }
+      }
+    }
+  }
+
+  #modal-account {
+    @media screen and (min-width: 980px) {
+      #modal-account-content {
+        display: flex;
+        justify-content: space-between;
+
+        & > div:first-child {
+          border-right: 1px dashed #ccc;
+          margin-right: 20px;
+        }
+      }
+    }
+
+    #profile .avatar {
+      object-fit: cover;
+      border-radius: 74px;
+      overflow: hidden;
+      height: 74px;
+      min-height: 74px;
+      min-width: 74px;
+      width: 74px;
+      border: 5px solid #FFF;
+      margin: 0 auto;
+      display: block;
+    }
+
+    #profile, #relays, #keys {
+      width: 300px;
+      display: flex;
+      color: #160b39;
+      padding: 10px;
+      margin: 10px;
+
+      form {
+        width: 100%;
+        button {float: right}
+
+        .submit-container {display: none}
+
+        .field {
+          display: flex;
+          flex-direction: column;
+          width: fit-content;
+          position: static;
+          width: 100%;
+
+          label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin: 10px 0 0 0;
+            padding: 0 3px;
+            text-align: right;
+            width: fit-content;
+            padding: 5px 5px 5px 0;
+            margin: 3px 0;
+            display: inline-block;
+          }
+
+          input[type=text].input, input[type=url].input, textarea {
+            padding: 11px 10px;
+            font-size: 0.75rem;
+            background-color: rgba(255, 255, 255, 0.8);
+            border: 1px solid #eaeaea;
+            border-radius: .375rem;
+
+            &:disabled {background: #FFF; opacity: 0.5}
+            &:focus {outline: none}
           }
         }
       }
