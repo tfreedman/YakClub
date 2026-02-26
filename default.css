@@ -242,8 +242,6 @@ body {
         a {
           margin: 10px;
 
-          &:last-of-type{margin-right: 0}
-
           .avatar {
             object-fit: cover;
             border-radius: 25px;
@@ -262,7 +260,7 @@ body {
 
           font-family: 'Fredoka';
           font-weight: bold;
-          font-size: 20px;
+          font-size: 0;
           color: #fff;
           text-decoration: none;
           &.active {opacity: 1}

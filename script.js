@@ -34,6 +34,10 @@ function toggleSearchBox() {
   }
 }
 
+tippy('.right a', {
+  content: (reference) => reference.dataset.tippy
+});
+
 document.querySelector('#search').addEventListener("click", toggleSearchBox)
 document.querySelector('#xmark').addEventListener("click", toggleSearchBox)
 
