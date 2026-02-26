@@ -202,21 +202,6 @@ body {
           }
         }
 
-        #title:before {
-          content: '✦';
-          transform: rotate(15deg);
-          text-shadow: none;
-          color: #2d6084;
-          font-size: 96px;
-          position: relative;
-          left: -20px;
-          display: inline-block;
-          margin-right: -60px;
-          top: 20px;
-          -webkit-text-stroke: none;
-          z-index: -1;
-        }
-
         #title {
           font-size: 30px;
           display: inline;

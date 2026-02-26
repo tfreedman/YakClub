@@ -4,6 +4,7 @@ window.pool = null;
 window.version = 6;
 window.settings = 0;
 window.hasFinishedLoading = false;
+window.isConnected = false;
 var pubKey;
 var snd = new Audio("/pop.mp3");
 window.lastDrawMode = null;
@@ -43,6 +44,16 @@ formInputs.forEach(i => {
 });
 
 toggleSearchBox();
+
+function toggleConnectionState(state) {
+  if (state && window.isConnected !== true) {
+    window.isConnected = true;
+    console.log('Connected to Nostr!');
+  } else if (!state && window.isConnected !== false) {
+    window.isConnected = false;
+    console.log('Disconnected from Nostr');
+  }
+}
 
 config = {
   locateFile: filename => `${filename}`
@@ -1198,7 +1209,7 @@ initSqlJs(config).then(function(SQL){
     pk = window.NostrTools.getPublicKey(sk) // `pk` is a hex string
   });
 
-  window.pool = new window.NostrTools.SimplePool()
+  window.pool = new window.NostrTools.SimplePool({enableReconnect: true, enablePing: true})
 
   window.relays = getRelays();
 
@@ -1225,6 +1236,7 @@ initSqlJs(config).then(function(SQL){
     ],
     {
       onevent(event) {
+        toggleConnectionState(true);
         if (event && event.pubkey && event.content && event.kind == 40 && window.NostrTools.verifyEvent(event, event.pubkey) && event.created_at > 1750046400) {
           importToast(event, window.hasFinishedLoading); // if the page has finished loading, save the DB in response to any change.
           dirty = true;
@@ -1235,6 +1247,9 @@ initSqlJs(config).then(function(SQL){
           syncDatabase();
         }
         fetchNotes();
+      },
+      onclose() {
+        toggleConnectionState(false);
       }
     }
   )
@@ -1267,6 +1282,7 @@ initSqlJs(config).then(function(SQL){
       relays, filters,
       {
         onevent(event) {
+          toggleConnectionState(true);
           if (event && event.pubkey && event.content && event.kind == kind && window.NostrTools.verifyEvent(event, event.pubkey)) {
             importNote(event, window.hasFinishedLoading); // if the page has finished loading, save the DB in response to any change.
 
@@ -1311,6 +1327,9 @@ initSqlJs(config).then(function(SQL){
         oneose() {
           console.log('EOSE on notes/messages - Calling fetchAuthorInfo...');
           fetchAuthorInfo();
+        },
+        onclose() {
+          toggleConnectionState(false);
         }
       }
     )
@@ -1480,6 +1499,8 @@ initSqlJs(config).then(function(SQL){
       ],
       {
         onevent(event) {
+          toggleConnectionState(true);
+
           if (event && event.pubkey && event.kind == 0) {
             importNote(event, window.hasFinishedLoading); // if the page has finished loading, save the DB in response to any change.
             dirty = true;
@@ -1514,6 +1535,9 @@ initSqlJs(config).then(function(SQL){
             }
             window.hasFinishedLoading = true;
           }
+        },
+        onclose() {
+          toggleConnectionState(false);
         }
       }
     )
@@ -1561,7 +1585,6 @@ initSqlJs(config).then(function(SQL){
     var shouldShowBackButton = false;
     var shouldShowRoomButtons = false;
     var showEmptyMessage = true;
-    var showFilters = false;
     var showFooter = false;
 
     if (mode.startsWith("domain-")) {
@@ -1791,20 +1814,6 @@ initSqlJs(config).then(function(SQL){
 
     var lastPubkey = null;
     var lastTimestamp = null;
-
-    if (showFilters) {
-      var article = document.createElement('div');
-      var innerHTML = `<p class="filters"><a href="#" data-filter="all">all</a> <span class="middot">&middot;</span> <a href="#" data-filter="favourite">favourites</a> <span class="middot">&middot;</span> <a href="#" data-filter="participant">participated</a> <span class="middot">&middot;</span> <a href="#" data-filter="creator">created</a></p>`
-      article.innerHTML = innerHTML;
-
-      var links = article.querySelectorAll("a");
-      links.forEach(i => {
-        i.addEventListener('click', (e) => filterToasts(e));
-      });
-
-
-      container.querySelector('.toasts').appendChild(article);
-    }
 
     while(true) {
       if (stmt.step()) {
@@ -2094,6 +2103,16 @@ initSqlJs(config).then(function(SQL){
 
       if (pageSubTitle !== undefined) {
         document.querySelector('h2#subtitle').innerHTML = pageSubTitle;
+        if (showFilters) {
+          document.querySelector('h2#subtitle').innerHTML = `<p class="filters"><a href="#" data-filter="all">all</a> <span class="middot">&middot;</span> <a href="#" data-filter="favourite">favourites</a><span class="middot">&middot;</span> <a href="#" data-filter="participant">participated</a> <span class="middot">&middot;</span> <a href="#" data-filter="creator">created</a></p>`
+
+          var links = document.querySelectorAll("h2#subtitle a");
+          links.forEach(i => {
+            i.addEventListener('click', (e) => filterToasts(e));
+          });
+        }
+
+
       } else {
         document.querySelector('h2#subtitle').innerHTML = '';
       }
