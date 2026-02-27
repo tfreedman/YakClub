@@ -964,8 +964,8 @@ initSqlJs(config).then(function(SQL){
     var dirty = false;
     var note = JSON.stringify(value);
     if (value['kind'] == 0) {
-      var existing_note_length = db.exec("SELECT * FROM notes WHERE pubkey = ? AND kind = 0", [value['pubkey']]).length
-      if (existing_note_length == 0) {
+      var existing_note = db.exec("SELECT created_at FROM notes WHERE pubkey = ? AND kind = 0", [value['pubkey']])
+      if (existing_note.length == 0) {
         console.log('Inserting ' + value['id'] + ' into Notes DB...');
         window.users[value['pubkey']] = value;
         if (value['pubkey'] == window.pubKey) {
@@ -975,14 +975,18 @@ initSqlJs(config).then(function(SQL){
         dirty = true;
         console.log('Adding ' + value['pubkey'] + ' to window.users...');
       } else {
-        console.log('Updating ' + value['id'] + ' into Notes DB...');
-        window.users[value['pubkey']] = value;
-        if (value['pubkey'] == window.pubKey) {
-          displayProfile(window.pubKey);
+        if (existing_note[0].values[0][0] < value['created_at']) {
+          console.log('Updating ' + value['id'] + ' into Notes DB...');
+          window.users[value['pubkey']] = value;
+          if (value['pubkey'] == window.pubKey) {
+            displayProfile(window.pubKey);
+          }
+          db.exec("UPDATE notes SET id = ?, created_at = ?, kind = ?, note = ? WHERE pubkey = ? AND kind = 0", [value['id'], value['created_at'], value['kind'], note, value['pubkey']]);
+          dirty = true;
+          console.log('Adding ' + value['pubkey'] + ' to window.users...');
+        } else {
+          console.log("Received an older kind 0 event than what's already in the database");
         }
-        db.run("UPDATE notes SET id = ?, created_at = ?, kind = ?, note = ? WHERE pubkey = ? AND created_at < ? AND kind = 0)", [value['id'], value['created_at'], value['kind'], note, value['pubkey'], value['created_at']]);
-        dirty = true;
-        console.log('Adding ' + value['pubkey'] + ' to window.users...');
       }
     } else if (value['kind'] == 42) {
       // Confirm it isn't a toast...
@@ -1477,7 +1481,7 @@ initSqlJs(config).then(function(SQL){
     while(stmt.step()) {
       const row = stmt.getAsObject();
       var event = JSON.parse(row.note);
-      userPubkeys.push(event.pubkey)
+      userPubkeys.push(event.pubkey);
     }
 
     // Get the public keys of everyone who's written a note
@@ -1496,6 +1500,22 @@ initSqlJs(config).then(function(SQL){
     userPubkeys = userPubkeys.filter(onlyUnique);
 
     console.log("userPubkeys: " + userPubkeys);
+
+    // Fetch all known authors from the database, and load their profiles into memory
+    var stmt = db.prepare("SELECT * FROM notes WHERE kind = 0");
+    while(stmt.step()) {
+      const row = stmt.getAsObject();
+      var event = JSON.parse(row.note);
+
+      // Load the rows from the DB first before loading from the network
+      if (window.users[event.pubkey] === undefined) {
+        window.users[event.pubkey] = event;
+        if (event.pubkey == window.pubKey) {
+          displayProfile(window.pubKey);
+        }
+      }
+    }
+
 
     var h = window.pool.subscribeMany(
       relays,[
@@ -2386,7 +2406,8 @@ function updateProfileModal(event, pubKey) {
       parent.appendChild(about);
     }
     if (profile.banner !== undefined) {
-      //document.querySelector('#modal-profile input[name="banner"]').value = profile.banner;
+      window.profile = profile;
+      document.querySelector('#modal-profile .banner').style.backgroundImage = "url('" + profile.banner + "')";
     }
     if (profile.picture !== undefined) {
       document.querySelector('#modal-profile .avatar img').src = profile.picture;
