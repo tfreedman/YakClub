@@ -234,7 +234,7 @@ body {
       }
 
       .right {
-        margin-top: 50px;
+        margin-top: 35px;
 
         a.active:after {
           content: "";
@@ -826,8 +826,7 @@ body {
 @media screen and (max-width: 930px) {
   body #topbar {
     nav {
-      .right {margin-top: 40px}
-      .left #logo {margin-top: -18px; width: 270px; height: 133px}
+      .left #logo {margin-top: -18px; width: 180px; height: 113px}
     }
   }
 }
