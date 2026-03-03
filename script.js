@@ -15,7 +15,7 @@ function toggleSearchBox() {
     document.querySelector('#search-container #xmark').style.display = 'none';
     document.querySelector('#search-container #search-wrapper').style.display = 'none';
     document.querySelector('#search-container #search').style.display = 'inline-block';
-    document.querySelector('#logo').classList.remove('hidden');
+    document.querySelector('#logoLink').classList.remove('hidden');
     document.querySelector('nav .middle').classList.remove('hidden');
     document.querySelectorAll('#topbar nav .right > a.tab').forEach(i => i.style.display = 'inline-block');
     document.querySelector('#topbar nav .right > a.modal-info-button').style.display = 'inline-block';
@@ -25,7 +25,7 @@ function toggleSearchBox() {
     document.querySelector('#search-container #xmark').style.display = 'inline-block';
     document.querySelector('#search-container #search-wrapper').style.display = 'inline-block';
     document.querySelector('#search-container #search').style.display = 'none';
-    document.querySelector('#logo').classList.add('hidden');
+    document.querySelector('#logoLink').classList.add('hidden');
     document.querySelector('nav .middle').classList.add('hidden');
     document.querySelector('#topbar nav .right > a.modal-info-button').style.display = 'none';
     document.querySelector('#topbar nav .right > a.modal-account-button').style.display = 'none';
@@ -1136,6 +1136,8 @@ initSqlJs(config).then(function(SQL){
   if (typeof chrome !== "undefined" && typeof chrome.tabs !== "undefined") {
     // Chrome Extension
     window.browserExtension = true;
+
+    document.querySelector('body').addClass('extension');
 
     chrome.tabs.onActivated.addListener( function(activeInfo){
       chrome.tabs.get(activeInfo.tabId, function(tab){

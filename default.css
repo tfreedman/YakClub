@@ -168,11 +168,12 @@ body {
       }
 
       .left {
-        #logo {
+        #logoLink {
           width: 270px;
           height: 133px;
+          &.hidden {display: block}
 
-           &.hidden {display: block}
+          #logo-mini {display: none}
         }
 
         #backBtn {
@@ -826,29 +827,58 @@ body {
 @media screen and (max-width: 930px) {
   body #topbar {
     nav {
-      .left #logo {margin-top: -18px; width: 180px; height: 113px}
+      .left {
+        #logoLink {width: 180px; height: 113px}
+        #backBtn {
+          width: 30px;
+          height: 30px;
+          margin: -90px -20px 0 5px;
+          svg {width: 30px; height: 30px}
+        }
+        .middle {
+          top: -35px;
+          left: 10px;
+          #title {font-size: 24px; -webkit-text-stroke: 8px #FFF}
+          #room-buttons {font-size: 30px; svg {width: 24px; height: 22px}}
+        }
+      }
+      .right {margin-top: 25px}
     }
   }
 }
 
-@media screen and (max-width: 840px) {
+@media screen and (max-width: 700px) {
   body #topbar {
-    nav .right a span {font-size: 0}
+    nav {
+      .left {
+        #logoLink {
+          margin-left: 10px;
+          width: 70px;
+          height: 70px;
+          #logo {display: none}
+          #logo-mini {display: inherit}
+        }
+        #backBtn {
+          margin: -50px -20px 0 5px;
+        }
+        .middle {
+          top: 0;
+          #room-buttons {position: relative; top: 5px}
+
+        }
+      }
+      .right {
+        margin-top: 22px;
+        a {svg, .avatar {width: 20px; height: 20px}}
+
+      }
+    }
   }
 }
 
 @media screen and (min-width: 512px) and (max-width: 660px) {
-  body #topbar {
-    nav {
-      .right {margin-top: 18px; #search-container #search-wrapper #search-bar {width: 250px}}
-      .left #logo {margin-top: -10px; width: 180px; height: 113px}
-    }
-  }
 }
 
 @media screen and (max-width: 520px) {
-  body #topbar nav {
-    .right {margin-top: 18px; #search-container #search-wrapper #search-bar {width: calc(100vw - 90px)}}
-    .left #logo {margin-top: -10px; width: 180px; height: 113px; &.hidden {opacity: 0; width: 1px}}
-  }
+
 }
