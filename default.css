@@ -81,6 +81,8 @@ html {
 }
 
 body {
+  &.extension {#logoLink {display: none}}
+
   margin: 0;
   background-size: cover;
   font-family: 'Fredoka';

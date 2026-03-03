@@ -1137,7 +1137,7 @@ initSqlJs(config).then(function(SQL){
     // Chrome Extension
     window.browserExtension = true;
 
-    document.querySelector('body').addClass('extension');
+    document.querySelector('body').classList.add('extension');
 
     chrome.tabs.onActivated.addListener( function(activeInfo){
       chrome.tabs.get(activeInfo.tabId, function(tab){
