@@ -34,7 +34,7 @@ function toggleSearchBox() {
   }
 }
 
-tippy('.right a', {
+tippy('.right > a, #search', {
   content: (reference) => reference.dataset.tippy
 });
 
