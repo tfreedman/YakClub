@@ -81,7 +81,7 @@ html {
 }
 
 body {
-  &.extension {#logoLink {display: none}}
+  &.extension #topbar nav .left #logoLink {width: 1px; opacity: 0}
 
   margin: 0;
   background-size: cover;
@@ -173,7 +173,7 @@ body {
         #logoLink {
           width: 270px;
           height: 133px;
-          &.hidden {display: block}
+          &.hidden {display: none}
 
           #logo-mini {display: none}
         }
@@ -237,6 +237,7 @@ body {
 
       .right {
         margin-top: 35px;
+        text-align: right;
 
         a.active:after {
           content: "";
@@ -860,6 +861,7 @@ body {
   body #topbar {
     nav {
       .left {
+        min-width: calc(100vw - 180px);
         #logoLink {
           margin-left: 10px;
           width: 70px;
@@ -872,10 +874,13 @@ body {
         }
         .middle {
           top: -10px;
+
+          &.hidden {display: none}
         }
       }
       .right {
         margin-top: 22px;
+        min-width: 180px;
         a {svg, .avatar {width: 20px; height: 20px}}
 
       }
@@ -883,6 +888,33 @@ body {
   }
 }
 
-@media screen and (max-width: 600px) {
+@media screen and (max-width: 400px) {
   body #topbar nav .right a {margin: 5px}
+
+  body.extension {
+    #topbar nav {
+      .left {
+        min-width: calc(100vw - 140px);
+        #backBtn {margin: 0; display: none !important}
+        #logoLink {margin: 0; display: none}
+
+        .middle {
+          left: 0;
+          top: 10px;
+          padding-left: 10px;
+
+          #room-buttons {
+            text-align: left;
+            a:first-child {margin-left: 0}
+          }
+          #title {-webkit-text-stroke: 4px #FFF; font-size: 20px}
+        }
+      }
+
+      .right {
+        min-width: 140px;
+        margin-top: 7px;
+      }
+    }
+  }
 }
