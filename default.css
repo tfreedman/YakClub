@@ -184,7 +184,7 @@ body {
           display: none;
           vertical-align: middle;
           cursor: pointer;
-          margin: -110px -20px 0 5px;
+          margin: -130px -20px 0 5px;
 
           svg {
             width: 50px;
@@ -202,9 +202,9 @@ body {
 
           #room-buttons {
             display: none;
+            text-align: center;
             font-size: 40px;
             color: #FFF;
-            margin: 5px 0 0 20px;
             svg {width: 30px; height: 30px; fill: #FFF; pointer-events: none}
             a {margin: 0 10px; text-decoration: none; color: #fff}
           }
@@ -227,7 +227,6 @@ body {
           #subtitle {
             margin: 0;
             font-size: 16px;
-            height: 16px;
             font-weight: normal;
             text-transform: lowercase;
 
@@ -339,7 +338,7 @@ body {
 
   #container {
     position: relative;
-    top: 150px;
+    top: 140px;
     z-index: 2;
     overflow-y: scroll;
     height: calc(100vh - 365px);
@@ -827,6 +826,10 @@ body {
 }
 
 @media screen and (max-width: 930px) {
+  body #container {
+    top: 115px;
+  }
+
   body #topbar {
     nav {
       .left {
@@ -838,7 +841,7 @@ body {
           svg {width: 30px; height: 30px}
         }
         .middle {
-          top: -35px;
+          top: -40px;
           left: 10px;
           #title {font-size: 24px; -webkit-text-stroke: 8px #FFF}
           #room-buttons {font-size: 30px; svg {width: 24px; height: 22px}}
@@ -850,6 +853,10 @@ body {
 }
 
 @media screen and (max-width: 700px) {
+  body #container {
+    top: 90px;
+  }
+
   body #topbar {
     nav {
       .left {
@@ -864,9 +871,7 @@ body {
           margin: -50px -20px 0 5px;
         }
         .middle {
-          top: 0;
-          #room-buttons {position: relative; top: 5px}
-
+          top: -10px;
         }
       }
       .right {
@@ -878,9 +883,6 @@ body {
   }
 }
 
-@media screen and (min-width: 512px) and (max-width: 660px) {
-}
-
-@media screen and (max-width: 520px) {
-
+@media screen and (max-width: 600px) {
+  body #topbar nav .right a {margin: 5px}
 }
