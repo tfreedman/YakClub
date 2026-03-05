@@ -111,7 +111,7 @@ body {
     position: relative;
     background-image: repeating-linear-gradient(45deg, rgba(255,255,255, 0.1) 0px, rgba(255,255,255, 0.1) 55px,transparent 55px, transparent 110px),repeating-linear-gradient(135deg, rgba(255,255,255, 0.1) 0px, rgba(255,255,255, 0.1) 55px,transparent 55px, transparent 110px),linear-gradient(135deg, rgb(13,242,242),rgb(13,242,242));
     mask: conic-gradient(from -45deg at bottom,#0000,#000 1deg 89deg,#0000 90deg) 50%/80px 100%;
-    padding-bottom: 250px;
+    padding-bottom: 190px;
   }
 
   #gradient {
@@ -170,9 +170,14 @@ body {
       }
 
       .left {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
         #logoLink {
           width: 270px;
           height: 133px;
+          #logo {width: 270px; height: 133px}
           &.hidden {display: none}
 
           #logo-mini {display: none}
@@ -184,7 +189,7 @@ body {
           display: none;
           vertical-align: middle;
           cursor: pointer;
-          margin: -130px -20px 0 5px;
+          margin: 0 -20px 0 10px;
 
           svg {
             width: 50px;
@@ -196,9 +201,6 @@ body {
         .middle {
           vertical-align: bottom;
           display: inline-block;
-          position: relative;
-          top: -45px;
-          left: 20px;
 
           #room-buttons {
             display: none;
@@ -342,7 +344,7 @@ body {
     top: 140px;
     z-index: 2;
     overflow-y: scroll;
-    height: calc(100vh - 365px);
+    height: calc(100vh - 305px);
     scrollbar-color: #262626 transparent;
     scrollbar-width: thin;
 
@@ -834,11 +836,11 @@ body {
   body #topbar {
     nav {
       .left {
-        #logoLink {width: 180px; height: 113px}
+        margin-top: -10px;
+        #logoLink, #logoLink #logo {width: 180px; height: 113px}
         #backBtn {
           width: 30px;
           height: 30px;
-          margin: -90px -20px 0 5px;
           svg {width: 30px; height: 30px}
         }
         .middle {
@@ -861,16 +863,17 @@ body {
   body #topbar {
     nav {
       .left {
-        min-width: calc(100vw - 180px);
+        margin-top: 5px;
+        #backBtn {
+          margin: 0 -15px 0 5px;
+        }
+
         #logoLink {
-          margin-left: 10px;
+          margin: 0 10px;
           width: 70px;
           height: 70px;
           #logo {display: none}
           #logo-mini {display: inherit}
-        }
-        #backBtn {
-          margin: -50px -20px 0 5px;
         }
         .middle {
           top: -10px;
@@ -894,7 +897,6 @@ body {
   body.extension {
     #topbar nav {
       .left {
-        min-width: calc(100vw - 140px);
         #backBtn {margin: 0; display: none !important}
         #logoLink {margin: 0; display: none}
 
