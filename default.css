@@ -178,7 +178,6 @@ body {
           width: 270px;
           height: 133px;
           #logo {width: 270px; height: 133px}
-          &.hidden {display: none}
 
           #logo-mini {display: none}
         }
@@ -304,7 +303,7 @@ body {
             height: 25px;
           }
 
-          #xmark {display: none}
+          #xmark {display: none; position: relative; top: -10px}
 
           #search-wrapper {
             position: relative;
@@ -890,6 +889,18 @@ body {
     }
   }
 }
+@media screen and (max-width: 500px) {
+  body {
+    #topbar nav {
+      .left {
+        #logoLink {
+          &.hidden {display: none}
+        }
+      }
+    }
+  }
+}
+
 
 @media screen and (max-width: 400px) {
   body #topbar nav .right a {margin: 5px}
