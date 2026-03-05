@@ -44,7 +44,7 @@ function linkifyAndEmbed(content) {
     // Image
     if (imgRegex.test(url)) {
       return `<a href="${escapeHtml(url)}" target="_blank" rel="noopener">
-        <img src="${escapeHtml(url)}" class="post-image" loading="lazy" />
+        <img src="${escapeHtml(url)}" class="post-image" />
       </a>`;
     }
 

@@ -591,10 +591,7 @@ function uploadNote(data, note, parent) {
     } else if (window.mode == "YakClub") {
       searchResults(document.getElementById('search-bar').value);
       if (!isToast && note["kind"] != 30078)  {
-        window.scrollTo({
-          top: document.body.scrollHeight,
-          behavior: 'smooth'
-        });
+        document.querySelector('#container').scrollTo({left: 0, top: document.querySelector('#container').scrollHeight, behavior: "smooth"});
       }
     }
     if (data) {
@@ -872,10 +869,7 @@ function displayToast(parent, data, note, params) {
       form.querySelector('.reply-details .content').innerHTML = this.parentElement.parentElement.querySelector('.content .caption').innerHTML;
       form.querySelector('.reply-details .tags').innerHTML = this.parentElement.parentElement.querySelector('.content .tags').innerHTML;
       form.querySelector('.reply-details').classList.remove('hidden');
-      window.scrollTo({
-        top: document.body.scrollHeight,
-        behavior: 'smooth'
-      });
+      document.querySelector('#yak').scrollIntoView({ block: 'end',  behavior: 'smooth' });
     }
   }
 
@@ -1271,9 +1265,11 @@ initSqlJs(config).then(function(SQL){
     if (window.mode == "Toastr") {
       var stmt = window.db.prepare("SELECT * FROM toasts WHERE kind = 1");
       kind = 1; // children of toasts are also kind 1
+      var obj = window;
     } else if (window.mode == "YakClub") {
       var stmt = window.db.prepare("SELECT * FROM toasts WHERE kind = 40");
       kind = 42; // children of channel messages are actually kind 42
+      var obj = document.querySelector('#yak');
     }
     while(stmt.step()) {
       const row = stmt.getAsObject();
@@ -1316,7 +1312,7 @@ initSqlJs(config).then(function(SQL){
                 if (weShouldRedraw) {
                   var shouldScroll = false;
                   // If the user is at the bottom of the page, we should scroll down again if a new message is received.
-                  if (document.documentElement.scrollTop == document.documentElement.scrollTopMax) {
+                  if (obj.scrollTop === (obj.scrollHeight - obj.offsetHeight)) {
                     shouldScroll = true;
                   }
                   if (event.pubkey != pubKey) {
@@ -1324,10 +1320,11 @@ initSqlJs(config).then(function(SQL){
                   }
                   searchResults(document.getElementById('search-bar').value);
                   if (shouldScroll) {
-                    window.scrollTo({
-                      top: document.body.scrollHeight,
-                      behavior: 'smooth'
-                    });
+                    if (window.mode == "Toastr") {
+                      obj.scrollTo({left: 0, top: obj.scrollHeight, behavior: "smooth"});
+                    } else if (window.mode == "YakClub") {
+                      document.querySelector('#container').scrollTo({left: 0, top: document.querySelector('#container').scrollHeight});
+                    }
                   }
                 }
               }
