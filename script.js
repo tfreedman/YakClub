@@ -463,8 +463,18 @@ function uploadProfileEvent(note) {
 }
 
 function resizeTextArea(event) {
-  event.target.style.height = '';
-  event.target.style.height = event.target.scrollHeight + 'px';
+  if (event) {
+    event.target.style.height = '';
+    event.target.style.height = event.target.scrollHeight + 'px';
+  }
+
+  var computedHeight = document.querySelector('footer#footer').scrollHeight;
+  if (computedHeight > 89) {
+    var newHeight = (216 + computedHeight);
+    document.querySelector('#container').style.height = `calc(100dvh - ${newHeight}px)`;
+  } else {
+    document.querySelector('#container').style.height = `calc(100dvh - 305px)`;
+  }
 }
 
 function validateToast(event, depth) {
@@ -507,6 +517,7 @@ function deleteReplyContent(event) {
   event.originalTarget.parentElement.querySelector('.content').innerHTML = '';
   event.originalTarget.parentElement.querySelector('.tags').innerHTML = '';
   event.originalTarget.parentElement.classList.add('hidden');
+  resizeTextArea();
 }
 
 // This technically handles notes and toasts
@@ -869,6 +880,7 @@ function displayToast(parent, data, note, params) {
       form.querySelector('.reply-details .content').innerHTML = this.parentElement.parentElement.querySelector('.content .caption').innerHTML;
       form.querySelector('.reply-details .tags').innerHTML = this.parentElement.parentElement.querySelector('.content .tags').innerHTML;
       form.querySelector('.reply-details').classList.remove('hidden');
+      resizeTextArea();
       document.querySelector('#yak').scrollIntoView({ block: 'end',  behavior: 'smooth' });
     }
   }
