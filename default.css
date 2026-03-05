@@ -112,6 +112,9 @@ body {
     background-image: repeating-linear-gradient(45deg, rgba(255,255,255, 0.1) 0px, rgba(255,255,255, 0.1) 55px,transparent 55px, transparent 110px),repeating-linear-gradient(135deg, rgba(255,255,255, 0.1) 0px, rgba(255,255,255, 0.1) 55px,transparent 55px, transparent 110px),linear-gradient(135deg, rgb(13,242,242),rgb(13,242,242));
     mask: conic-gradient(from -45deg at bottom,#0000,#000 1deg 89deg,#0000 90deg) 50%/80px 100%;
     padding-bottom: 190px;
+    &.hidden-footer #container {
+      height: calc(100dvh - 195px);
+    }
   }
 
   #gradient {
@@ -343,7 +346,7 @@ body {
     top: 140px;
     z-index: 2;
     overflow-y: scroll;
-    height: calc(100vh - 305px);
+    height: calc(100dvh - 305px);
     scrollbar-color: #262626 transparent;
     scrollbar-width: thin;
 

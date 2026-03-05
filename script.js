@@ -2158,8 +2158,10 @@ initSqlJs(config).then(function(SQL){
 
     if (showFooter) {
       document.querySelector('footer#footer').style.display = 'block';
+      document.querySelector('#parent').classList.remove('hidden-footer');
     } else {
       document.querySelector('footer#footer').style.display = 'none';
+      document.querySelector('#parent').classList.add('hidden-footer');
     }
 
     try {
