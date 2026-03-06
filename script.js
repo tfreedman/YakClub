@@ -1621,6 +1621,7 @@ initSqlJs(config).then(function(SQL){
     var shouldShowRoomButtons = false;
     var showEmptyMessage = true;
     var showFooter = false;
+    var showFilters = false;
 
     if (mode.startsWith("domain-")) {
       console.log("Filtering to domain name " + mode.substring(7));
