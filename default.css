@@ -808,7 +808,23 @@ body {
   }
 
   #modal-profile {
+    .modal__title {
+      margin: -40px 0 40px;
+    }
+
     text-align: center;
+
+    .banner {
+      width: 420px;
+      height: 200px;
+      background-size: cover;
+      background-position: center;
+      padding-top: 20px;
+    }
+
+    .pubkey {
+      font-size: 12px;
+    }
 
     .avatar {
       object-fit: cover;
