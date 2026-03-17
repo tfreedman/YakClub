@@ -772,7 +772,10 @@ body {
           float: right;
           &.active {background: #cc5295}
           &[type="button"] {float: none}
+        }
 
+        .banner-upload-group .field, .picture-upload-group .field {
+          padding: 0 0 20px 20px;
         }
 
         .submit-container {display: none}

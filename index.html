@@ -147,9 +147,23 @@
                     <label for="website">Website:</label>
                     <input name="website" value="" type="url" class="input" />
                   </div>
-                  <div class="field">
-                    <label for="banner">Banner (URL):</label>
-                    <input name="banner" value="" type="url" class="input" />
+
+                  <div class="banner-upload-group">
+                    <label for="banner">Banner:</label>
+                    <br />
+                    <button type="button" class="banner-upload active">From a File</button>
+                    <button type="button" class="banner-url">From a URL</button>
+                    <br />
+
+                    <div class="field upload active">
+                      <label for="file">File (PNG/JPG/WebP): <span class="banner-message"></span></label>
+                      <input name="file" type="file" accept="image/png, image/jpeg, image/webp" />
+                    </div>
+
+                    <div class="field url hidden">
+                      <label for="banner">URL:</label>
+                      <input name="banner" value="" type="url" class="input" />
+                    </div>
                   </div>
 
                   <div class="picture-upload-group">
@@ -160,9 +174,8 @@
                     <br />
 
                     <div class="field upload active">
-                      <label for="file">File (PNG/JPG):</label>
-                      <input name="file" type="file" accept="image/png, image/jpeg" />
-                      <span class="picture-message"></span>
+                      <label for="file">File (PNG/JPG/WebP): <span class="picture-message"></span></label>
+                      <input name="file" type="file" accept="image/png, image/jpeg, image/webp" />
                     </div>
 
                     <div class="field url hidden">

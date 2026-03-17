@@ -420,35 +420,59 @@ document.querySelectorAll('#profile .picture-upload-group > button[type="button"
     if (event.target.classList.contains('picture-upload')) {
       document.querySelector('#profile .picture-upload-group .picture-upload').classList.add('active')
       document.querySelector('#profile .picture-upload-group .picture-url').classList.remove('active')
-
       document.querySelector('#profile .picture-upload-group .upload').classList.remove('hidden')
       document.querySelector('#profile .picture-upload-group .url').classList.add('hidden')
     } else {
       document.querySelector('#profile .picture-upload-group .picture-url').classList.add('active')
       document.querySelector('#profile .picture-upload-group .picture-upload').classList.remove('active')
-
       document.querySelector('#profile .picture-upload-group .url').classList.remove('hidden')
       document.querySelector('#profile .picture-upload-group .upload').classList.add('hidden')
     }
   });
 });
 
+document.querySelectorAll('#profile .banner-upload-group > button[type="button"]').forEach(button => {
+  button.addEventListener("click", event => {
+    if (event.target.classList.contains('banner-upload')) {
+      document.querySelector('#profile .banner-upload-group .banner-upload').classList.add('active')
+      document.querySelector('#profile .banner-upload-group .banner-url').classList.remove('active')
+      document.querySelector('#profile .banner-upload-group .upload').classList.remove('hidden')
+      document.querySelector('#profile .banner-upload-group .url').classList.add('hidden')
+    } else {
+      document.querySelector('#profile .banner-upload-group .banner-url').classList.add('active')
+      document.querySelector('#profile .banner-upload-group .banner-upload').classList.remove('active')
+      document.querySelector('#profile .banner-upload-group .url').classList.remove('hidden')
+      document.querySelector('#profile .banner-upload-group .upload').classList.add('hidden')
+    }
+  });
+});
 
-document.querySelector('#profile input[type="file"]').addEventListener('change', (e) => {
+document.querySelector('#profile .picture-upload-group input[type="file"]').addEventListener('change', (e) => {
   const files = document.querySelector('#profile .picture-upload-group input[type="file"]').files;
+  const message = document.querySelector('#profile .picture-upload-group .picture-message');
+  const urlBox = document.querySelector('#profile .picture-upload-group input[name="picture"]');
+
   if (files.length > 0) {
-    uploadFilesWithFetch(files);
+    uploadFilesWithFetch(files, message, 'avatar', urlBox);
   }
 });
 
-const uploadFilesWithFetch = async(files) => {
-  const message = document.querySelector('#profile .picture-upload-group .picture-message');
+document.querySelector('#profile .banner-upload-group input[type="file"]').addEventListener('change', (e) => {
+  const files = document.querySelector('#profile .banner-upload-group input[type="file"]').files;
+  const message = document.querySelector('#profile .banner-upload-group .banner-message');
+  const urlBox = document.querySelector('#profile .banner-upload-group input[name="banner"]');
 
+  if (files.length > 0) {
+    uploadFilesWithFetch(files, message, 'banner', urlBox);
+  }
+});
+
+const uploadFilesWithFetch = async(files, message, kind, urlBox) => {
   const formData = new FormData();
   formData.append('file', files[0]);
 
   formData.append('npub', document.querySelector('#keys input[name="npub"]').value)
-  formData.append('kind', 'avatar');
+  formData.append('kind', kind);
 
   try {
     const response = await fetch('https://nostr.tylerfreedman.com/api/upload', {
@@ -459,7 +483,7 @@ const uploadFilesWithFetch = async(files) => {
     if (response.ok) {
       window.response = response;
       let responseText = await response.text();
-      document.querySelector('#profile .picture-upload-group input[name="picture"]').value = responseText;
+      urlBox.value = responseText;
       message.textContent = '✅';
       message.className = 'message success';
     } else {
