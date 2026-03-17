@@ -768,7 +768,12 @@ body {
 
       form {
         width: 100%;
-        button {float: right}
+        button {
+          float: right;
+          &.active {background: #cc5295}
+          &[type="button"] {float: none}
+
+        }
 
         .submit-container {display: none}
 
@@ -778,6 +783,8 @@ body {
           width: fit-content;
           position: static;
           width: 100%;
+
+          &.hidden {display: none}
 
           label {
             font-size: 0.75rem;

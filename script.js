@@ -372,7 +372,7 @@ function displayProfile(pubKey) {
     document.querySelector('#keys input[name="npub"]').value = window.NostrTools.nip19.npubEncode(pubKey);
     document.querySelector('#keys input[name="npub"]').disabled = true;
 
-    document.querySelector('#profile button').addEventListener('click', updateProfile);
+    document.querySelector('#profile button[type="submit"]').addEventListener('click', updateProfile);
 
     if (window.users[pubKey] !== undefined) {
       console.log("There's profile data!");
@@ -415,7 +415,67 @@ function getReplyAuthor(elem) {
   return {username: elem.querySelector(".username").textContent, pubkey: elem.querySelector(".pubkey").textContent, avatar: elem.querySelector(".avatar").innerHTML};
 }
 
-function updateProfile() {
+document.querySelectorAll('#profile .picture-upload-group > button[type="button"]').forEach(button => {
+  button.addEventListener("click", event => {
+    if (event.target.classList.contains('picture-upload')) {
+      document.querySelector('#profile .picture-upload-group .picture-upload').classList.add('active')
+      document.querySelector('#profile .picture-upload-group .picture-url').classList.remove('active')
+
+      document.querySelector('#profile .picture-upload-group .upload').classList.remove('hidden')
+      document.querySelector('#profile .picture-upload-group .url').classList.add('hidden')
+    } else {
+      document.querySelector('#profile .picture-upload-group .picture-url').classList.add('active')
+      document.querySelector('#profile .picture-upload-group .picture-upload').classList.remove('active')
+
+      document.querySelector('#profile .picture-upload-group .url').classList.remove('hidden')
+      document.querySelector('#profile .picture-upload-group .upload').classList.add('hidden')
+    }
+  });
+});
+
+
+document.querySelector('#profile input[type="file"]').addEventListener('change', (e) => {
+  const files = document.querySelector('#profile .picture-upload-group input[type="file"]').files;
+  if (files.length > 0) {
+    uploadFilesWithFetch(files);
+  }
+});
+
+const uploadFilesWithFetch = async(files) => {
+  const message = document.querySelector('#profile .picture-upload-group .picture-message');
+
+  const formData = new FormData();
+  formData.append('file', files[0]);
+
+  formData.append('npub', document.querySelector('#keys input[name="npub"]').value)
+  formData.append('kind', 'avatar');
+
+  try {
+    const response = await fetch('https://nostr.tylerfreedman.com/api/upload', {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (response.ok) {
+      window.response = response;
+      let responseText = await response.text();
+      document.querySelector('#profile .picture-upload-group input[name="picture"]').value = responseText;
+      message.textContent = '✅';
+      message.className = 'message success';
+    } else {
+      message.textContent = '❌';
+      message.className = 'message error';
+    }
+  } catch (error) {
+    message.textContent = 'An error occurred while uploading.';
+    message.className = 'message error';
+  }
+};
+
+function updateProfile(event) {
+  if (event !== undefined) {
+    event.preventDefault();
+  }
   var content = {};
   var container = document.querySelector('#profile');
   var name = container.querySelector('input[name="name"]').value;
@@ -504,9 +564,9 @@ function validateProfile(event) {
   var data = event.target.parentElement.parentElement;
 
   if (data.checkValidity()) {
-    data.querySelector('#profile button').disabled = false;
+    data.querySelector('#profile button[type="submit"]').disabled = false;
   } else {
-    data.querySelector('#profile button').disabled = true;
+    data.querySelector('#profile button[type="submit"]').disabled = true;
   }
 }
 
