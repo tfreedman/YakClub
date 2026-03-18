@@ -467,6 +467,13 @@ document.querySelector('#profile .banner-upload-group input[type="file"]').addEv
   }
 });
 
+async function sha256FromBlob(blob) {
+  const buffer = await blob.arrayBuffer();
+  const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
 const uploadFilesWithFetch = async(files, message, kind, urlBox) => {
   const formData = new FormData();
   formData.append('file', files[0]);
@@ -474,26 +481,32 @@ const uploadFilesWithFetch = async(files, message, kind, urlBox) => {
   formData.append('npub', document.querySelector('#keys input[name="npub"]').value)
   formData.append('kind', kind);
 
-  try {
-    const response = await fetch('https://nostr.tylerfreedman.com/api/upload', {
-      method: 'POST',
-      body: formData,
-    });
+  var hash = sha256FromBlob(files[0]).then(hash => {
+    console.log('hash: ' + hash);
+    formData.append('X-SHA-256', hash);
 
-    if (response.ok) {
-      window.response = response;
-      let responseText = await response.text();
-      urlBox.value = responseText;
-      message.textContent = '✅';
-      message.className = 'message success';
-    } else {
-      message.textContent = '❌';
+    try {
+      const response = fetch('https://nostr.tylerfreedman.com/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (response.ok) {
+        window.response = response;
+        let responseText = response.text();
+        urlBox.value = responseText;
+        message.textContent = '✅';
+        message.className = 'message success';
+      } else {
+        message.textContent = '❌';
+        message.className = 'message error';
+      }
+    } catch (error) {
+      message.textContent = 'An error occurred while uploading.';
       message.className = 'message error';
     }
-  } catch (error) {
-    message.textContent = 'An error occurred while uploading.';
-    message.className = 'message error';
-  }
+
+  });
 };
 
 function updateProfile(event) {
