@@ -453,7 +453,7 @@ document.querySelector('#profile .picture-upload-group input[type="file"]').addE
   const urlBox = document.querySelector('#profile .picture-upload-group input[name="picture"]');
 
   if (files.length > 0) {
-    uploadFilesWithFetch(files, message, 'avatar', urlBox);
+    signNoteForFileUpload(files, message, 'avatar', urlBox);
   }
 });
 
@@ -463,7 +463,7 @@ document.querySelector('#profile .banner-upload-group input[type="file"]').addEv
   const urlBox = document.querySelector('#profile .banner-upload-group input[name="banner"]');
 
   if (files.length > 0) {
-    uploadFilesWithFetch(files, message, 'banner', urlBox);
+    signNoteForFileUpload(files, message, 'banner', urlBox);
   }
 });
 
@@ -474,7 +474,33 @@ async function sha256FromBlob(blob) {
   return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
-const uploadFilesWithFetch = async(files, message, kind, urlBox) => {
+async function uploadFile(formData, message, urlBox, note) {
+  try {
+    const response = fetch('https://nostr.tylerfreedman.com/api/upload', {
+      method: 'POST',
+      headers: {
+        "Authorization": "Nostr " + base64url_encode(note)
+      },
+      body: formData,
+    });
+
+    if (response.ok) {
+      window.response = response;
+      let responseText = response.text();
+      urlBox.value = responseText;
+      message.textContent = '✅';
+      message.className = 'message success';
+    } else {
+      message.textContent = '❌';
+      message.className = 'message error';
+    }
+  } catch (error) {
+    message.textContent = 'An error occurred while uploading.';
+    message.className = 'message error';
+  }
+}
+
+const signNoteForFileUpload = async(files, message, kind, urlBox) => {
   const formData = new FormData();
   formData.append('file', files[0]);
 
@@ -485,27 +511,21 @@ const uploadFilesWithFetch = async(files, message, kind, urlBox) => {
     console.log('hash: ' + hash);
     formData.append('X-SHA-256', hash);
 
-    try {
-      const response = fetch('https://nostr.tylerfreedman.com/api/upload', {
-        method: 'POST',
-        body: formData,
-      });
+    var tags = [["t","upload"], ["expiration", Math.floor(Date.now() / 1000).toString()], ["x", hash]];
+    var e = {created_at: Math.floor(Date.now() / 1000), kind: 24242, tags: tags, content: ""};
 
-      if (response.ok) {
-        window.response = response;
-        let responseText = response.text();
-        urlBox.value = responseText;
-        message.textContent = '✅';
-        message.className = 'message success';
-      } else {
-        message.textContent = '❌';
-        message.className = 'message error';
-      }
-    } catch (error) {
-      message.textContent = 'An error occurred while uploading.';
-      message.className = 'message error';
+    if (typeof window.nostr !== 'undefined') {
+      // NIP07 supported
+      window.nostr.signEvent(e).then(note => {
+        console.log("signed note via nip07: " + note.toString());
+        uploadFile(formData, message, urlBox, JSON.stringify(note));
+      })
+    } else {
+      // NIP07 unsupported
+      var note = window.NostrTools.finalizeEvent(e, Uint8Array.from(window.NostrTools.nip19.decode(localStorage.getItem('privkey')).data));
+      console.log("signed note without nip07: " + JSON.stringify(note));
+      uploadFile(formData, message, urlBox, JSON.stringify(note));
     }
-
   });
 };
 
