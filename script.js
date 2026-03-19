@@ -479,7 +479,7 @@ async function uploadFile(formData, message, urlBox, note) {
     message.classList.remove('error');
     message.classList.remove('success');
 
-    const response = fetch('https://nostr.tylerfreedman.com/api/upload', {
+    const response = await fetch('https://nostr.tylerfreedman.com/api/upload', {
       method: 'POST',
       headers: {
         "Authorization": "Nostr " + base64url_encode(note)
@@ -488,8 +488,8 @@ async function uploadFile(formData, message, urlBox, note) {
     });
 
     if (response.ok) {
-      window.response = response;
-      let responseText = response.text();
+      let responseText = await response.text();
+      console.log('Received: ' + responseText);
       urlBox.value = responseText;
       message.textContent = '✅';
       message.classList.add('success');
