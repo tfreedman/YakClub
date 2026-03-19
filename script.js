@@ -476,6 +476,9 @@ async function sha256FromBlob(blob) {
 
 async function uploadFile(formData, message, urlBox, note) {
   try {
+    message.classList.remove('error');
+    message.classList.remove('success');
+
     const response = fetch('https://nostr.tylerfreedman.com/api/upload', {
       method: 'POST',
       headers: {
@@ -489,10 +492,10 @@ async function uploadFile(formData, message, urlBox, note) {
       let responseText = response.text();
       urlBox.value = responseText;
       message.textContent = '✅';
-      message.className = 'message success';
+      message.classList.add('success');
     } else {
       message.textContent = '❌';
-      message.className = 'message error';
+      message.classList.add('error');
     }
   } catch (error) {
     message.textContent = 'An error occurred while uploading.';
