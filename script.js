@@ -506,15 +506,13 @@ async function uploadFile(formData, message, urlBox, note) {
 const signNoteForFileUpload = async(files, message, kind, urlBox) => {
   const formData = new FormData();
   formData.append('file', files[0]);
-
-  formData.append('npub', document.querySelector('#keys input[name="npub"]').value)
   formData.append('kind', kind);
 
   var hash = sha256FromBlob(files[0]).then(hash => {
     console.log('hash: ' + hash);
     formData.append('X-SHA-256', hash);
 
-    var tags = [["t","upload"], ["expiration", Math.floor(Date.now() / 1000).toString()], ["x", hash]];
+    var tags = [["t","upload"], ["expiration", (Math.floor(Date.now() / 1000) + 60).toString()], ["x", hash]];
     var e = {created_at: Math.floor(Date.now() / 1000), kind: 24242, tags: tags, content: ""};
 
     if (typeof window.nostr !== 'undefined') {
